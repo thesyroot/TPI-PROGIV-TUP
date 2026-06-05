@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es"
+      th:fragment="layout(pageTitle, page)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: 'Prode - Panel de Gestion'">Prode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script defer th:src="@{/js/main.js}"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gradient-to-b from-indigo-800 to-indigo-950 text-white flex flex-col shadow-xl">
+        <div class="p-5 border-b border-indigo-700">
+            <a href="/" class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Prode</h1>
+                    <p class="text-indigo-300 text-xs">Panel de Gestion</p>
+                </div>
+            </a>
+        </div>
+        <nav class="flex-1 p-4 space-y-1">
+            <a href="/" class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 sidebar-link" data-href="/">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <div class="pt-4 pb-1">
+                <p class="px-4 text-xs font-semibold text-indigo-300 uppercase tracking-wider">Gestion</p>
+            </div>
+            <a href="/teams" class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 sidebar-link" data-href="/teams">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                <span>Equipos</span>
+            </a>
+            <a href="/players" class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 sidebar-link" data-href="/players">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span>Jugadores</span>
+            </a>
+            <a href="/rounds" class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 sidebar-link" data-href="/rounds">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span>Jornadas</span>
+            </a>
+            <a href="/matches" class="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 sidebar-link" data-href="/matches">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Partidos</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-indigo-700">
+            <a href="/swagger-ui.html" target="_blank" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-indigo-300 hover:text-white hover:bg-indigo-700/50 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span>API Docs</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-h-screen">
+        <!-- Top Bar -->
+        <header class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-gray-800" th:text="${pageTitle} ?: 'Dashboard'">Dashboard</h2>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-gray-500">TPI - Programacion IV</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="flex-1 p-6">
+            <!-- Flash messages -->
+            <div th:if="${success}" class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg flex items-center gap-2">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-2">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span th:text="${error}"></span>
+            </div>
+            <th:block th:insert="${page}"></th:block>
+        </div>
+    </main>
+
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            <div class="text-center">
+                <div class="mx-auto w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Confirmar eliminacion</h3>
+                <p class="text-sm text-gray-500 mb-6">Esta accion no se puede deshacer. Esta seguro de que desea eliminar este elemento?</p>
+                <form id="deleteForm" method="POST" class="flex justify-center gap-3">
+                    <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar active state
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            if (link.dataset.href === window.location.pathname) {
+                link.classList.add('bg-indigo-700/50', 'text-white');
+            } else {
+                link.classList.add('text-indigo-200', 'hover:bg-indigo-700/30', 'hover:text-white');
+            }
+        });
+
+        function openDeleteModal(url) {
+            document.getElementById('deleteForm').action = url;
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('deleteModal').classList.add('flex');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            document.getElementById('deleteModal').classList.remove('flex');
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('deleteModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteModal();
+        });
+    </script>
+</body>
+</html>

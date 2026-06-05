@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(pageTitle='Detalle de Equipo', page=~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="mb-6">
+        <a href="/teams" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1 mb-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Volver a equipos
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-6 md:p-8">
+            <div class="flex items-center gap-6">
+                <img th:if="${team.imagenUrl}" th:src="${team.imagenUrl}" alt="" class="w-24 h-24 rounded-xl object-cover bg-gray-100">
+                <div th:unless="${team.imagenUrl}" class="w-24 h-24 rounded-xl bg-indigo-100 flex items-center justify-center">
+                    <span class="text-2xl font-bold text-indigo-600" th:text="${#strings.substring(team.nombre, 0, 2)}">AB</span>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900" th:text="${team.nombre}">Nombre</h2>
+                    <span class="text-sm text-gray-500" th:text="${team.cantidadJugadores + ' jugador(es)'}">0 jugadores</span>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-gray-100 px-6 py-4 bg-gray-50 flex items-center gap-3">
+            <a th:href="@{'/teams/' + ${team.id} + '/edit'}" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-medium text-sm">Editar</a>
+            <button th:onclick="'openDeleteModal(\'/teams/' + ${team.id} + '/delete\')'" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium text-sm">Eliminar</button>
+        </div>
+    </div>
+
+    <!-- Team Players Section -->
+    <div class="mt-8">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Jugadores del equipo</h3>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div th:if="${#lists.isEmpty(team.jugadores)}" class="p-6 text-center text-gray-500">
+                No hay jugadores en este equipo.
+            </div>
+            <table class="w-full" th:unless="${#lists.isEmpty(team.jugadores)}">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-100">
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Jugador</th>
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Rol</th>
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Camiseta</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <tr th:each="p : ${team.jugadores}" class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-3">
+                            <div class="flex items-center gap-3">
+                                <img th:if="${p.imagenUrl}" th:src="${p.imagenUrl}" alt="" class="w-9 h-9 rounded-full object-cover bg-gray-100">
+                                <div th:unless="${p.imagenUrl}" class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold text-xs">
+                                    <span th:text="${#strings.substring(p.nombre, 0, 2)}">AB</span>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900" th:text="${p.nombre + ' ' + p.apellido}">Nombre</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-3 text-sm text-gray-600 hidden sm:table-cell" th:text="${p.rol}">Rol</td>
+                        <td class="px-6 py-3 text-sm text-gray-600 hidden md:table-cell" th:text="${p.numeroCamiseta}">10</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
