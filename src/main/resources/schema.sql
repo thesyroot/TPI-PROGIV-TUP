@@ -76,3 +76,16 @@ CREATE TABLE IF NOT EXISTS Prediccion (
     fecha_modificacion TIMESTAMP,
     UNIQUE(id_usuario, id_partido)
 );
+
+CREATE TABLE IF NOT EXISTS refresh_token (
+    id BIGSERIAL PRIMARY KEY,
+    id_usuario BIGINT NOT NULL REFERENCES Usuario(id),
+    token VARCHAR(255) NOT NULL UNIQUE,
+    fecha_expiracion TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS token_revocado (
+    id BIGSERIAL PRIMARY KEY,
+    token VARCHAR(500) NOT NULL UNIQUE,
+    fecha_revocacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

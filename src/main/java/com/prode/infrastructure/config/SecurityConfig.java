@@ -1,32 +1,124 @@
 package com.prode.infrastructure.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import java.util.List;
+
+import com.prode.infrastructure.security.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final UserDetailsService userDetailsService;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, UserDetailsService userDetailsService) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.userDetailsService = userDetailsService;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()
-            )
-            .formLogin(form -> form.disable())
-            .httpBasic(basic -> basic.disable());
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // 1. RUTAS PÚBLICAS ACTUALIZADAS (Se agregaron refresh y logout)
+                        .requestMatchers(
+                                "/api/users/login",
+                                "/api/users/register",
+                                "/api/users/refresh",
+                                "/api/users/logout",
+                                "/users/login",
+                                "/users/new",
+                                "/users",
+                                "/css/**", "/js/**", "/images/**",
+                                "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
+                        .permitAll()
+
+                        // 2. RESTRICCIÓN ESTRICTA API: Solo ADMIN puede modificar datos
+                        .requestMatchers(HttpMethod.POST, "/api/matches/**", "/api/rounds/**", "/api/teams/**",
+                                "/api/players/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/matches/**", "/api/rounds/**", "/api/teams/**",
+                                "/api/players/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/matches/**", "/api/rounds/**", "/api/teams/**",
+                                "/api/players/**")
+                        .hasRole("ADMIN")
+
+                        // 3. RESTRICCIÓN ESTRICTA WEB (Thymeleaf): Solo ADMIN
+                        .requestMatchers("/matches/new", "/matches/*/edit", "/rounds/new", "/rounds/*/edit",
+                                "/teams/new", "/teams/*/edit", "/players/new", "/players/*/edit")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/matches", "/matches/*/update", "/matches/*/delete")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/rounds", "/rounds/*/update", "/rounds/*/delete")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/teams", "/teams/*/update", "/teams/*/delete")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/players", "/players/*/update", "/players/*/delete")
+                        .hasRole("ADMIN")
+
+                        // 4. LECTURA GENERAL: Todos (USER y ADMIN) pueden ver listados
+                        .requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/matches", "/rounds", "/teams", "/teams/*", "/players",
+                                "/players/*", "/")
+                        .hasAnyRole("USER", "ADMIN")
+
+                        // 5. BLOQUEO POR DEFECTO
+                        .anyRequest().authenticated())
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            if (request.getRequestURI().startsWith("/api/")) {
+                                response.sendError(401, "No autorizado");
+                            } else {
+                                response.sendRedirect("/users/login");
+                            }
+                        }))
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable());
+
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
