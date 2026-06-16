@@ -1,5 +1,4 @@
 package com.prode.infrastructure.adapter.outbound.persistence.repository;
-
 import com.prode.domain.model.Prediction;
 import com.prode.domain.port.outbound.PredictionRepository;
 import com.prode.infrastructure.adapter.outbound.persistence.entity.PredictionEntity;
@@ -16,29 +15,28 @@ public class PredictionRepositoryAdapter implements PredictionRepository {
     private final JpaPredictionRepository jpaPredictionRepository;
     private final JpaMatchRepository jpaMatchRepository;
     private final JpaUserRepository jpaUserRepository;
+    private final JpaPointsRepository jpaPointsRepository;
 
     public PredictionRepositoryAdapter(JpaPredictionRepository jpaPredictionRepository,
                                         JpaMatchRepository jpaMatchRepository,
-                                        JpaUserRepository jpaUserRepository) {
+                                        JpaUserRepository jpaUserRepository,
+                                        JpaPointsRepository jpaPointsRepository) {
         this.jpaPredictionRepository = jpaPredictionRepository;
         this.jpaMatchRepository = jpaMatchRepository;
         this.jpaUserRepository = jpaUserRepository;
+        this.jpaPointsRepository = jpaPointsRepository;
     }
 
     @Override
     public List<Prediction> findByUsuarioId(Long usuarioId) {
         return jpaPredictionRepository.findByUsuarioIdWithRelations(usuarioId)
-                .stream()
-                .map(PredictionMapper::toDomain)
-                .toList();
+                .stream().map(PredictionMapper::toDomain).toList();
     }
 
     @Override
     public List<Prediction> findByPartidoId(Long partidoId) {
         return jpaPredictionRepository.findByPartidoIdWithRelations(partidoId)
-                .stream()
-                .map(PredictionMapper::toDomain)
-                .toList();
+                .stream().map(PredictionMapper::toDomain).toList();
     }
 
     @Override
@@ -50,9 +48,7 @@ public class PredictionRepositoryAdapter implements PredictionRepository {
     @Override
     public List<Prediction> findAll() {
         return jpaPredictionRepository.findAllWithRelations()
-                .stream()
-                .map(PredictionMapper::toDomain)
-                .toList();
+                .stream().map(PredictionMapper::toDomain).toList();
     }
 
     @Override
@@ -64,22 +60,40 @@ public class PredictionRepositoryAdapter implements PredictionRepository {
     @Override
     public Prediction save(Prediction prediction) {
         PredictionEntity entity = PredictionMapper.toEntity(prediction);
-        // ensure managed JPA references
-        if (prediction.getMatch() != null && prediction.getMatch().getId() != null) {
+        if (prediction.getMatch() != null && prediction.getMatch().getId() != null)
             entity.setPartido(jpaMatchRepository.getReferenceById(prediction.getMatch().getId()));
-        }
-        if (prediction.getUser() != null && prediction.getUser().getId() != null) {
+        if (prediction.getUser() != null && prediction.getUser().getId() != null)
             entity.setUsuario(jpaUserRepository.getReferenceById(prediction.getUser().getId()));
-        }
+        if (prediction.getPoints() != null && prediction.getPoints().getId() != null)
+            entity.setPuntosAsignados(jpaPointsRepository.getReferenceById(prediction.getPoints().getId()));
         PredictionEntity saved = jpaPredictionRepository.save(entity);
         return jpaPredictionRepository.findById(saved.getId())
-                .map(PredictionMapper::toDomain)
-                .orElse(null);
+                .map(PredictionMapper::toDomain).orElse(null);
     }
 
     @Override
     public Optional<Prediction> findById(Long id) {
-        return jpaPredictionRepository.findById(id)
-                .map(PredictionMapper::toDomain);
+        return jpaPredictionRepository.findById(id).map(PredictionMapper::toDomain);
+    }
+
+    @Override
+    public List<Prediction> findByPartidoIdForScoring(Long partidoId) {
+        return jpaPredictionRepository.findByPartidoIdForScoring(partidoId)
+                .stream().map(PredictionMapper::toDomain).toList();
+    }
+
+    @Override
+    public void saveAll(List<Prediction> predictions) {
+        List<PredictionEntity> entities = predictions.stream().map(p -> {
+            PredictionEntity entity = PredictionMapper.toEntity(p);
+            if (p.getMatch() != null && p.getMatch().getId() != null)
+                entity.setPartido(jpaMatchRepository.getReferenceById(p.getMatch().getId()));
+            if (p.getUser() != null && p.getUser().getId() != null)
+                entity.setUsuario(jpaUserRepository.getReferenceById(p.getUser().getId()));
+            if (p.getPoints() != null && p.getPoints().getId() != null)
+                entity.setPuntosAsignados(jpaPointsRepository.getReferenceById(p.getPoints().getId()));
+            return entity;
+        }).toList();
+        jpaPredictionRepository.saveAll(entities);
     }
 }

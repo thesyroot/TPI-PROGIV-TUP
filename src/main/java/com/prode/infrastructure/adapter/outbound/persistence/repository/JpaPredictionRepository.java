@@ -31,4 +31,8 @@ public interface JpaPredictionRepository extends JpaRepository<PredictionEntity,
                                            @Param("jornadaId") Long jornadaId,
                                            @Param("usuarioId") Long usuarioId,
                                            Pageable pageable);
+
+
+    @Query("SELECT p FROM PredictionEntity p JOIN FETCH p.usuario WHERE p.partido.id = :partidoId AND p.estado = 'ACTIVO'")
+    List<PredictionEntity> findByPartidoIdForScoring(@Param("partidoId") Long partidoId);
 }

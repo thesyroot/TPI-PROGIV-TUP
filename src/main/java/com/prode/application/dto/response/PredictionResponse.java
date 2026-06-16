@@ -56,6 +56,9 @@ public class PredictionResponse {
     @Schema(description = "Last modification date")
     private LocalDateTime fechaModificacion;
 
+    @Schema(description = "Points awarded for this prediction (null if not resolved yet)")
+    private Integer puntosObtenidos;
+
     public PredictionResponse() {}
 
     public Long getId() { return id; }
@@ -90,4 +93,6 @@ public class PredictionResponse {
     public void setFechaCarga(LocalDateTime fechaCarga) { this.fechaCarga = fechaCarga; }
     public LocalDateTime getFechaModificacion() { return fechaModificacion; }
     public void setFechaModificacion(LocalDateTime fechaModificacion) { this.fechaModificacion = fechaModificacion; }
+    public Integer getPuntosObtenidos() { return puntosObtenidos; }
+    public void setPuntosObtenidos(Integer puntosObtenidos) { this.puntosObtenidos = puntosObtenidos; }
 }

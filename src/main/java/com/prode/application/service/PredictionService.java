@@ -99,7 +99,6 @@ public class PredictionService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
-        // Upsert: if user already has a prediction for this match, update it
         Optional<Prediction> existing = predictionRepository.findByUsuarioIdAndPartidoId(user.getId(), match.getId());
         if (existing.isPresent()) {
             Prediction prediction = existing.get();
@@ -216,6 +215,9 @@ public class PredictionService {
         response.setUserNombre(prediction.getUser().getNombre() + " " + prediction.getUser().getApellido());
         response.setFechaCarga(prediction.getFechaCarga());
         response.setFechaModificacion(prediction.getFechaModificacion());
+        if (prediction.getPoints() != null) {
+            response.setPuntosObtenidos(prediction.getPoints().getValor());
+        }
         return response;
     }
 }

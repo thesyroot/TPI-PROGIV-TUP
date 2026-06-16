@@ -14,4 +14,6 @@ public interface PredictionRepository {
     Page<Prediction> findAllFiltered(Long matchId, Long jornadaId, Long usuarioId, Pageable pageable);
     Prediction save(Prediction prediction);
     Optional<Prediction> findById(Long id);
+    List<Prediction> findByPartidoIdForScoring(Long partidoId);
+    void saveAll(List<Prediction> predictions);
 }

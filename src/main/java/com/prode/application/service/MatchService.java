@@ -1,5 +1,6 @@
 package com.prode.application.service;
 
+
 import com.prode.application.dto.request.MatchRequest;
 import com.prode.application.dto.response.MatchResponse;
 import com.prode.domain.enums.EstadoPartido;
@@ -11,6 +12,7 @@ import com.prode.domain.port.outbound.RoundRepository;
 import com.prode.domain.port.outbound.TeamRepository;
 import com.prode.shared.exception.BusinessException;
 import com.prode.shared.exception.ResourceNotFoundException;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,35 +26,33 @@ public class MatchService {
 
     private final MatchRepository matchRepository;
     private final RoundRepository roundRepository;
-    private final TeamRepository teamRepository;
+    private final TeamRepository  teamRepository;
+    private final ScoringService  scoringService;
 
-    public MatchService(MatchRepository matchRepository, RoundRepository roundRepository, TeamRepository teamRepository) {
+    public MatchService(MatchRepository matchRepository,
+                        RoundRepository roundRepository,
+                        TeamRepository teamRepository,
+                        @Lazy ScoringService scoringService) {
         this.matchRepository = matchRepository;
         this.roundRepository = roundRepository;
-        this.teamRepository = teamRepository;
+        this.teamRepository  = teamRepository;
+        this.scoringService  = scoringService;
     }
 
     @Transactional(readOnly = true)
     public List<MatchResponse> findAll(Long jornadaId) {
-        List<Match> matches;
-        if (jornadaId != null) {
-            matches = matchRepository.findByRoundId(jornadaId);
-        } else {
-            matches = matchRepository.findAllOrderByFechaAsc();
-        }
-        return matches.stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        List<Match> matches = jornadaId != null
+                ? matchRepository.findByRoundId(jornadaId)
+                : matchRepository.findAllOrderByFechaAsc();
+        return matches.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public Page<MatchResponse> findAll(Long jornadaId, Pageable pageable) {
         if (jornadaId != null) {
-            return matchRepository.findByRoundId(jornadaId, pageable)
-                    .map(this::toResponse);
+            return matchRepository.findByRoundId(jornadaId, pageable).map(this::toResponse);
         }
-        return matchRepository.findAllOrderByFechaAsc(pageable)
-                .map(this::toResponse);
+        return matchRepository.findAllOrderByFechaAsc(pageable).map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
@@ -63,16 +63,13 @@ public class MatchService {
     }
 
     public MatchResponse create(MatchRequest request) {
-        if (request.getEquipoLocalId().equals(request.getEquipoVisitanteId())) {
+        if (request.getEquipoLocalId().equals(request.getEquipoVisitanteId()))
             throw new BusinessException("El equipo local y visitante deben ser diferentes");
-        }
 
         Round round = roundRepository.findById(request.getJornadaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Jornada no encontrada con id: " + request.getJornadaId()));
-
         Team local = teamRepository.findById(request.getEquipoLocalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Equipo local no encontrado con id: " + request.getEquipoLocalId()));
-
         Team visitante = teamRepository.findById(request.getEquipoVisitanteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Equipo visitante no encontrado con id: " + request.getEquipoVisitanteId()));
 
@@ -83,69 +80,61 @@ public class MatchService {
         match.setEquipoVisitante(visitante);
         match.setEstado(EstadoPartido.POR_JUGARSE);
 
-        Match saved = matchRepository.save(match);
-        return toResponse(saved);
+        return toResponse(matchRepository.save(match));
     }
 
     public MatchResponse update(Long id, MatchRequest request) {
         Match match = matchRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Partido no encontrado con id: " + id));
 
-        if (match.getEstado() != EstadoPartido.POR_JUGARSE) {
+        if (match.getEstado() != EstadoPartido.POR_JUGARSE)
             throw new BusinessException("Solo se pueden modificar partidos en estado POR JUGARSE");
-        }
-
-        if (request.getEquipoLocalId().equals(request.getEquipoVisitanteId())) {
+        if (request.getEquipoLocalId().equals(request.getEquipoVisitanteId()))
             throw new BusinessException("El equipo local y visitante deben ser diferentes");
-        }
 
         Round round = roundRepository.findById(request.getJornadaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Jornada no encontrada con id: " + request.getJornadaId()));
-
         Team local = teamRepository.findById(request.getEquipoLocalId())
-                .orElseThrow(() -> new ResourceNotFoundException("Equipo local no encontrado con id: " + request.getEquipoLocalId()));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Equipo local no encontrado"));
         Team visitante = teamRepository.findById(request.getEquipoVisitanteId())
-                .orElseThrow(() -> new ResourceNotFoundException("Equipo visitante no encontrado con id: " + request.getEquipoVisitanteId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Equipo visitante no encontrado"));
 
         match.setRound(round);
         match.setFecha(request.getFecha());
         match.setEquipoLocal(local);
         match.setEquipoVisitante(visitante);
 
-        Match updated = matchRepository.update(match);
-        return toResponse(updated);
+        return toResponse(matchRepository.update(match));
     }
 
     public void delete(Long id) {
         Match match = matchRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Partido no encontrado con id: " + id));
-
-        if (match.getEstado() != EstadoPartido.POR_JUGARSE) {
+        if (match.getEstado() != EstadoPartido.POR_JUGARSE)
             throw new BusinessException("Solo se pueden eliminar partidos en estado POR JUGARSE");
-        }
-
-        if (matchRepository.countPredictionsByMatchId(id) > 0) {
+        if (matchRepository.countPredictionsByMatchId(id) > 0)
             throw new BusinessException("No se puede eliminar el partido porque tiene pronosticos registrados");
-        }
-
         matchRepository.deleteById(id);
     }
+
 
     public MatchResponse finalize(Long id, Integer localScore, Integer visitanteScore) {
         Match match = matchRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Partido no encontrado con id: " + id));
 
-        if (match.getEstado() == EstadoPartido.FINALIZADO) {
+        if (match.getEstado() == EstadoPartido.FINALIZADO)
             throw new BusinessException("El partido ya esta finalizado");
-        }
 
         match.setPuntosLocal(localScore);
         match.setPuntosVisitante(visitanteScore);
-        match.setResultado(match.getEquipoLocal().getNombre() + " " + localScore + " - " + visitanteScore + " " + match.getEquipoVisitante().getNombre());
+        match.setResultado(match.getEquipoLocal().getNombre() + " " + localScore
+                + " - " + visitanteScore + " " + match.getEquipoVisitante().getNombre());
         match.setEstado(EstadoPartido.FINALIZADO);
 
         Match updated = matchRepository.update(match);
+
+        scoringService.procesarPuntos(id);
+
         return toResponse(updated);
     }
 

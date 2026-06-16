@@ -6,4 +6,5 @@ import java.util.Optional;
 
 public interface JpaPointsRepository extends JpaRepository<PointsEntity, Long> {
     Optional<PointsEntity> findByNombre(String nombre);
+    Optional<PointsEntity> findByValor(Integer valor);
 }
