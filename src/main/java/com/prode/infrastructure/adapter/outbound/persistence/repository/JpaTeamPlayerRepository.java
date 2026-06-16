@@ -4,6 +4,7 @@ import com.prode.infrastructure.adapter.outbound.persistence.entity.TeamPlayerEn
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,4 +24,13 @@ public interface JpaTeamPlayerRepository extends JpaRepository<TeamPlayerEntity,
 
     @Query("SELECT tp.jugador FROM TeamPlayerEntity tp WHERE tp.activo = true")
     List<com.prode.infrastructure.adapter.outbound.persistence.entity.PlayerEntity> findAllAssignedPlayers();
+
+    @Query("SELECT tp.equipo.id, COUNT(tp) FROM TeamPlayerEntity tp WHERE tp.equipo.id IN :teamIds AND tp.activo = true GROUP BY tp.equipo.id")
+    List<Object[]> countByEquipoIdsAndActivoTrue(@Param("teamIds") Collection<Long> teamIds);
+
+    @Query("SELECT tp.jugador.id, tp.equipo.nombre FROM TeamPlayerEntity tp WHERE tp.jugador.id IN :playerIds AND tp.activo = true")
+    List<Object[]> findTeamNamesByJugadorIds(@Param("playerIds") Collection<Long> playerIds);
+
+    @Query("SELECT tp.jugador.id, tp.rol FROM TeamPlayerEntity tp WHERE tp.jugador.id IN :playerIds AND tp.activo = true")
+    List<Object[]> findRolesByJugadorIds(@Param("playerIds") Collection<Long> playerIds);
 }

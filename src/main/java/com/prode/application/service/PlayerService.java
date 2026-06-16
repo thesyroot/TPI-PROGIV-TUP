@@ -12,7 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,36 +29,29 @@ public class PlayerService {
 
     @Transactional(readOnly = true)
     public List<PlayerResponse> findUnassigned() {
-        return playerRepository.findUnassigned().stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return toResponseList(playerRepository.findUnassigned());
     }
 
     @Transactional(readOnly = true)
     public List<PlayerResponse> findUnassignedOrByTeamId(Long teamId) {
-        return playerRepository.findUnassignedOrByTeamId(teamId).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return toResponseList(playerRepository.findUnassignedOrByTeamId(teamId));
     }
 
     @Transactional(readOnly = true)
     public List<PlayerResponse> findAll() {
-        return playerRepository.findAllActive().stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return toResponseList(playerRepository.findAllActive());
     }
 
     @Transactional(readOnly = true)
     public Page<PlayerResponse> findAll(Pageable pageable) {
-        return playerRepository.findAllActive(pageable)
-                .map(this::toResponse);
+        Page<Player> page = playerRepository.findAllActive(pageable);
+        List<PlayerResponse> responses = toResponseList(page.getContent());
+        return new org.springframework.data.domain.PageImpl<>(responses, pageable, page.getTotalElements());
     }
 
     @Transactional(readOnly = true)
     public List<PlayerResponse> searchByNombre(String nombre) {
-        return playerRepository.findByNombreContainingIgnoreCase(nombre).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return toResponseList(playerRepository.findByNombreContainingIgnoreCase(nombre));
     }
 
     @Transactional(readOnly = true)
@@ -73,9 +66,7 @@ public class PlayerService {
         if (!teamRepository.existsById(teamId)) {
             throw new ResourceNotFoundException("Equipo no encontrado con id: " + teamId);
         }
-        return playerRepository.findByTeamId(teamId).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return toResponseListWithTeam(playerRepository.findByTeamId(teamId), teamId);
     }
 
     public PlayerResponse create(PlayerRequest request) {
@@ -116,6 +107,43 @@ public class PlayerService {
         Player player = playerRepository.findById(id).get();
         player.setActivo(false);
         playerRepository.update(player);
+    }
+
+    private List<PlayerResponse> toResponseList(List<Player> players) {
+        if (players.isEmpty()) return Collections.emptyList();
+        Set<Long> playerIds = players.stream().map(Player::getId).collect(Collectors.toSet());
+        Map<Long, String> teamNames = teamRepository.findTeamNamesByPlayerIds(playerIds);
+        Map<Long, String> roles = teamRepository.findRolesByPlayerIds(playerIds);
+        return players.stream().map(p -> {
+            PlayerResponse r = new PlayerResponse();
+            r.setId(p.getId());
+            r.setNombre(p.getNombre());
+            r.setApellido(p.getApellido());
+            r.setNumeroCamiseta(p.getNumeroCamiseta());
+            r.setImagenUrl(p.getImagenUrl());
+            r.setEquipoNombre(teamNames.get(p.getId()));
+            r.setRol(roles.get(p.getId()));
+            return r;
+        }).collect(Collectors.toList());
+    }
+
+    private List<PlayerResponse> toResponseListWithTeam(List<Player> players, Long teamId) {
+        if (players.isEmpty()) return Collections.emptyList();
+        Set<Long> playerIds = players.stream().map(Player::getId).collect(Collectors.toSet());
+        Map<Long, String> roles = teamRepository.findRolesByPlayerIds(playerIds);
+        String teamName = teamRepository.findTeamNameByPlayerId(players.get(0).getId());
+        return players.stream().map(p -> {
+            PlayerResponse r = new PlayerResponse();
+            r.setId(p.getId());
+            r.setNombre(p.getNombre());
+            r.setApellido(p.getApellido());
+            r.setNumeroCamiseta(p.getNumeroCamiseta());
+            r.setImagenUrl(p.getImagenUrl());
+            r.setEquipoId(teamId);
+            r.setEquipoNombre(teamName);
+            r.setRol(roles.get(p.getId()));
+            return r;
+        }).collect(Collectors.toList());
     }
 
     private PlayerResponse toResponse(Player player) {

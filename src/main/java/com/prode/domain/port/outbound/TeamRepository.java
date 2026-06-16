@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface TeamRepository {
     List<Team> findAll();
@@ -24,4 +25,8 @@ public interface TeamRepository {
     int countActivePlayersByTeamId(Long teamId);
     String findTeamNameByPlayerId(Long playerId);
     String findPlayerRoleByPlayerId(Long playerId);
+
+    Map<Long, Integer> countActivePlayersByTeamIds(Set<Long> teamIds);
+    Map<Long, String> findTeamNamesByPlayerIds(Set<Long> playerIds);
+    Map<Long, String> findRolesByPlayerIds(Set<Long> playerIds);
 }

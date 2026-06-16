@@ -74,12 +74,16 @@ public class UserController {
         String jwtToken = jwtService.generateToken(userDetails);
         RefreshTokenEntity refreshToken = refreshTokenService.createRefreshToken(request.getEmail());
 
+        String rol = userDetails.getAuthorities().stream()
+                .findFirst().map(Object::toString)
+                .orElse("USER");
+
         ResponseCookie jwtCookie = ResponseCookie.from("jwt_token", jwtToken)
                 .httpOnly(true).secure(false).path("/").maxAge(7 * 24 * 60 * 60).sameSite("Lax").build();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .body(ApiResult.ok("Login exitoso", new LoginResponse(jwtToken, refreshToken.getToken())));
+                .body(ApiResult.ok("Login exitoso", new LoginResponse(jwtToken, refreshToken.getToken(), rol)));
     }
 
     @PostMapping("/refresh")
@@ -96,10 +100,13 @@ public class UserController {
                     ResponseCookie jwtCookie = ResponseCookie.from("jwt_token", token)
                             .httpOnly(true).secure(false).path("/").maxAge(7 * 24 * 60 * 60).sameSite("Lax").build();
 
+                    String rol = userDetails.getAuthorities().stream()
+                            .findFirst().map(Object::toString)
+                            .orElse("USER");
                     return ResponseEntity.ok()
                             .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                             .body(ApiResult.ok("Token refrescado",
-                                    new LoginResponse(token, request.getRefreshToken())));
+                                    new LoginResponse(token, request.getRefreshToken(), rol)));
                 })
                 .orElseThrow(() -> new BusinessException("Refresh token no valido o expirado"));
     }

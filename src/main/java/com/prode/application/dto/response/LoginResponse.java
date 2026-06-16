@@ -8,10 +8,12 @@ public class LoginResponse {
     private String accessToken;
     private String refreshToken;
     private String tokenType = "Bearer";
+    private String rol;
 
-    public LoginResponse(String accessToken, String refreshToken) {
+    public LoginResponse(String accessToken, String refreshToken, String rol) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
+        this.rol = rol;
     }
 
     public String getAccessToken() {
@@ -36,5 +38,13 @@ public class LoginResponse {
 
     public void setTokenType(String tokenType) {
         this.tokenType = tokenType;
+    }
+
+    public String getRol() {
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
     }
 }

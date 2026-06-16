@@ -75,8 +75,13 @@
                 });
 
                 if (response.ok) {
-                    // Si el login es correcto, la Cookie HttpOnly ya fue seteada.
-                    window.location.href = '/';
+                    const data = await response.json();
+                    const rol = data.data && data.data.rol;
+                    if (rol === 'ROLE_ADMIN') {
+                        window.location.href = '/';
+                    } else {
+                        window.location.href = '/user/dashboard';
+                    }
                 } else {
                     errorBox.innerText = 'Credenciales inválidas. Intente nuevamente.';
                     errorBox.classList.remove('hidden');

@@ -132,6 +132,23 @@ public class MatchService {
         matchRepository.deleteById(id);
     }
 
+    public MatchResponse finalize(Long id, Integer localScore, Integer visitanteScore) {
+        Match match = matchRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Partido no encontrado con id: " + id));
+
+        if (match.getEstado() == EstadoPartido.FINALIZADO) {
+            throw new BusinessException("El partido ya esta finalizado");
+        }
+
+        match.setPuntosLocal(localScore);
+        match.setPuntosVisitante(visitanteScore);
+        match.setResultado(match.getEquipoLocal().getNombre() + " " + localScore + " - " + visitanteScore + " " + match.getEquipoVisitante().getNombre());
+        match.setEstado(EstadoPartido.FINALIZADO);
+
+        Match updated = matchRepository.update(match);
+        return toResponse(updated);
+    }
+
     public boolean existsMatchWithTeam(Long teamId) {
         return matchRepository.existsMatchWithTeam(teamId);
     }

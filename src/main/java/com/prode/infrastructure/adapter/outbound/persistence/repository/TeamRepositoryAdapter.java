@@ -9,9 +9,7 @@ import com.prode.infrastructure.adapter.outbound.persistence.mapper.TeamMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -142,5 +140,35 @@ public class TeamRepositoryAdapter implements TeamRepository {
     @Override
     public String findPlayerRoleByPlayerId(Long playerId) {
         return jpaTeamPlayerRepository.findRolByJugadorId(playerId);
+    }
+
+    @Override
+    public Map<Long, Integer> countActivePlayersByTeamIds(Set<Long> teamIds) {
+        if (teamIds.isEmpty()) return Collections.emptyMap();
+        return jpaTeamPlayerRepository.countByEquipoIdsAndActivoTrue(teamIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> ((Number) row[1]).intValue()
+                ));
+    }
+
+    @Override
+    public Map<Long, String> findTeamNamesByPlayerIds(Set<Long> playerIds) {
+        if (playerIds.isEmpty()) return Collections.emptyMap();
+        return jpaTeamPlayerRepository.findTeamNamesByJugadorIds(playerIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (String) row[1]
+                ));
+    }
+
+    @Override
+    public Map<Long, String> findRolesByPlayerIds(Set<Long> playerIds) {
+        if (playerIds.isEmpty()) return Collections.emptyMap();
+        return jpaTeamPlayerRepository.findRolesByJugadorIds(playerIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (String) row[1]
+                ));
     }
 }

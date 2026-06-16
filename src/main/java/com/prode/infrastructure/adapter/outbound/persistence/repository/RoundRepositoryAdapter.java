@@ -8,8 +8,7 @@ import com.prode.infrastructure.adapter.outbound.persistence.mapper.RoundMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -97,5 +96,15 @@ public class RoundRepositoryAdapter implements RoundRepository {
     @Override
     public long countMatchesByRoundId(Long roundId) {
         return jpaMatchRepository.countByJornadaId(roundId);
+    }
+
+    @Override
+    public Map<Long, Long> countMatchesByRoundIds(Set<Long> roundIds) {
+        if (roundIds.isEmpty()) return Collections.emptyMap();
+        return jpaMatchRepository.countByJornadaIdIn(roundIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
     }
 }

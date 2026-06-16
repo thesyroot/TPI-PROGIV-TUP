@@ -12,8 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,15 +31,14 @@ public class TeamService {
 
     @Transactional(readOnly = true)
     public List<TeamResponse> findAll() {
-        return teamRepository.findAllActive().stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return toResponseList(teamRepository.findAllActive());
     }
 
     @Transactional(readOnly = true)
     public Page<TeamResponse> findAll(Pageable pageable) {
-        return teamRepository.findAllActive(pageable)
-                .map(this::toResponse);
+        Page<Team> page = teamRepository.findAllActive(pageable);
+        List<TeamResponse> responses = toResponseList(page.getContent());
+        return new org.springframework.data.domain.PageImpl<>(responses, pageable, page.getTotalElements());
     }
 
     @Transactional(readOnly = true)
@@ -116,6 +114,20 @@ public class TeamService {
         }
         team.setActivo(false);
         teamRepository.update(team);
+    }
+
+    private List<TeamResponse> toResponseList(List<Team> teams) {
+        if (teams.isEmpty()) return Collections.emptyList();
+        Set<Long> teamIds = teams.stream().map(Team::getId).collect(Collectors.toSet());
+        Map<Long, Integer> counts = teamRepository.countActivePlayersByTeamIds(teamIds);
+        return teams.stream().map(t -> {
+            TeamResponse r = new TeamResponse();
+            r.setId(t.getId());
+            r.setNombre(t.getNombre());
+            r.setImagenUrl(t.getImagenUrl());
+            r.setCantidadJugadores(counts.getOrDefault(t.getId(), 0));
+            return r;
+        }).collect(Collectors.toList());
     }
 
     private TeamResponse toResponse(Team team) {

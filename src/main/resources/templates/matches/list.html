@@ -36,13 +36,15 @@
                 <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded" th:text="${match.jornadaNombre}">
                     Jornada
                 </span>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                      th:classappend="${match.estado == 'FINALIZADO'} ? 'bg-green-100 text-green-800' : 
-                                       ${match.estado == 'EN_VIVO'} ? 'bg-red-100 text-red-800' : 
-                                       'bg-gray-100 text-gray-800'"
-                      th:text="${match.estado == 'FINALIZADO'} ? 'Finalizado' : 
-                               ${match.estado == 'EN_VIVO'} ? 'En vivo' : 
-                               'Por jugarse'">Estado</span>
+                <th:block th:if="${match.estado == 'FINALIZADO'}">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Finalizado</span>
+                </th:block>
+                <th:block th:if="${match.estado == 'EN_VIVO'}">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">En vivo</span>
+                </th:block>
+                <th:block th:if="${match.estado != 'FINALIZADO' and match.estado != 'EN_VIVO'}">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Por jugarse</span>
+                </th:block>
             </div>
 
             <div class="flex items-center justify-between py-3">
@@ -72,7 +74,15 @@
             <div class="flex items-center justify-between pt-2 border-t border-gray-100">
                 <span class="text-xs text-gray-400" th:if="${match.fecha}" th:text="${#temporals.format(match.fecha, 'dd/MM/yyyy HH:mm')}">Fecha</span>
                 <span class="text-xs text-gray-400" th:unless="${match.fecha}">Sin fecha asignada</span>
+                <span class="text-xs text-green-600 font-medium" th:if="${match.estado == 'FINALIZADO' and match.resultado != null}" th:text="'Resultado: ' + ${match.resultado}">Resultado</span>
                 <div class="flex items-center gap-1">
+                    <a th:if="${match.estado != 'FINALIZADO'}"
+                       th:href="@{'/matches/' + ${match.id} + '/finalizar'}"
+                       class="p-1.5 text-green-600 hover:bg-green-50 rounded transition" title="Finalizar">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </a>
                     <a th:href="@{'/matches/' + ${match.id} + '/edit'}" class="p-1.5 text-amber-600 hover:bg-amber-50 rounded transition" title="Editar">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>

@@ -66,26 +66,17 @@ public class SecurityConfig {
                                 "/api/players/**")
                         .hasRole("ADMIN")
 
-                        // 3. RESTRICCIÓN ESTRICTA WEB (Thymeleaf): Solo ADMIN
-                        .requestMatchers("/matches/new", "/matches/*/edit", "/rounds/new", "/rounds/*/edit",
-                                "/teams/new", "/teams/*/edit", "/players/new", "/players/*/edit")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/matches", "/matches/*/update", "/matches/*/delete")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/rounds", "/rounds/*/update", "/rounds/*/delete")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/teams", "/teams/*/update", "/teams/*/delete")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/players", "/players/*/update", "/players/*/delete")
+                        // 3. PANEL USER: USER y ADMIN
+                        .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
+
+                        // 4. RESTRICCIÓN ESTRICTA WEB (Thymeleaf): Solo ADMIN
+                        .requestMatchers("/", "/matches/**", "/rounds/**", "/teams/**", "/players/**")
                         .hasRole("ADMIN")
 
-                        // 4. LECTURA GENERAL: Todos (USER y ADMIN) pueden ver listados
+                        // 5. API LECTURA: USER y ADMIN
                         .requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/matches", "/rounds", "/teams", "/teams/*", "/players",
-                                "/players/*", "/")
-                        .hasAnyRole("USER", "ADMIN")
 
-                        // 5. BLOQUEO POR DEFECTO
+                        // 6. BLOQUEO POR DEFECTO
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

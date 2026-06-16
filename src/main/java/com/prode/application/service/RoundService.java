@@ -12,7 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,24 +40,24 @@ public class RoundService {
         } else {
             rounds = roundRepository.findAll();
         }
-        return rounds.stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return toResponseList(rounds);
     }
 
     @Transactional(readOnly = true)
     public Page<RoundResponse> findAll(String estado, Pageable pageable) {
+        Page<Round> page;
         if (estado != null && !estado.isEmpty()) {
             try {
                 EstadoJornada estadoEnum = EstadoJornada.valueOf(estado.toUpperCase());
-                return roundRepository.findByEstado(estadoEnum, pageable)
-                        .map(this::toResponse);
+                page = roundRepository.findByEstado(estadoEnum, pageable);
             } catch (IllegalArgumentException e) {
                 throw new BusinessException("Estado de jornada invalido: " + estado);
             }
+        } else {
+            page = roundRepository.findAll(pageable);
         }
-        return roundRepository.findAll(pageable)
-                .map(this::toResponse);
+        List<RoundResponse> responses = toResponseList(page.getContent());
+        return new org.springframework.data.domain.PageImpl<>(responses, pageable, page.getTotalElements());
     }
 
     @Transactional(readOnly = true)
@@ -103,6 +103,22 @@ public class RoundService {
             throw new BusinessException("No se puede eliminar la jornada porque tiene partidos asociados");
         }
         roundRepository.deleteById(id);
+    }
+
+    private List<RoundResponse> toResponseList(List<Round> rounds) {
+        if (rounds.isEmpty()) return Collections.emptyList();
+        Set<Long> roundIds = rounds.stream().map(Round::getId).collect(Collectors.toSet());
+        Map<Long, Long> counts = roundRepository.countMatchesByRoundIds(roundIds);
+        return rounds.stream().map(r -> {
+            RoundResponse response = new RoundResponse();
+            response.setId(r.getId());
+            response.setNombre(r.getNombre());
+            response.setInicioJornada(r.getInicioJornada());
+            response.setFinJornada(r.getFinJornada());
+            response.setEstado(r.getEstado() != null ? r.getEstado().name() : "PROGRAMADA");
+            response.setCantidadPartidos(counts.getOrDefault(r.getId(), 0L).intValue());
+            return response;
+        }).collect(Collectors.toList());
     }
 
     private RoundResponse toResponse(Round round) {

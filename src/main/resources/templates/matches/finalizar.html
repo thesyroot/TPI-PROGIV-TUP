@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(pageTitle='Finalizar Partido', page=~{::content})}">
+<body>
+<div th:fragment="content">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Finalizar Partido</h2>
+            <p class="text-gray-500 mt-1">Ingresa el resultado final del partido</p>
+        </div>
+        <a href="/matches" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            Volver
+        </a>
+    </div>
+
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-700 to-indigo-600 p-5 text-white text-center">
+                <p class="text-sm text-indigo-200 mb-1" th:text="${match.jornadaNombre}">Jornada</p>
+                <p class="text-sm" th:text="${#temporals.format(match.fecha, 'EEEE dd/MM/yyyy HH:mm')}">Fecha</p>
+            </div>
+
+            <div class="p-8">
+                <div class="flex items-center justify-center gap-8 mb-8">
+                    <div class="text-center flex-1">
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full bg-gray-50 border-2 border-gray-100 flex items-center justify-center overflow-hidden">
+                            <img th:if="${match.equipoLocalImagen}" th:src="${match.equipoLocalImagen}" alt="" class="w-14 h-14 object-contain">
+                            <span th:unless="${match.equipoLocalImagen}" class="text-2xl font-bold text-gray-300" th:text="${#strings.substring(match.equipoLocalNombre, 0, 2)}">LO</span>
+                        </div>
+                        <p class="font-semibold text-gray-800 text-lg" th:text="${match.equipoLocalNombre}">Local</p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <span class="text-2xl font-black text-gray-200">VS</span>
+                    </div>
+                    <div class="text-center flex-1">
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-full bg-gray-50 border-2 border-gray-100 flex items-center justify-center overflow-hidden">
+                            <img th:if="${match.equipoVisitanteImagen}" th:src="${match.equipoVisitanteImagen}" alt="" class="w-14 h-14 object-contain">
+                            <span th:unless="${match.equipoVisitanteImagen}" class="text-2xl font-bold text-gray-300" th:text="${#strings.substring(match.equipoVisitanteNombre, 0, 2)}">VI</span>
+                        </div>
+                        <p class="font-semibold text-gray-800 text-lg" th:text="${match.equipoVisitanteNombre}">Visitante</p>
+                    </div>
+                </div>
+
+                <form method="post" th:action="@{'/matches/' + ${match.id} + '/finalizar'}" class="space-y-6">
+                    <div class="flex items-center justify-center gap-6">
+                        <div class="text-center">
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Goles Local</label>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="adjustScore('puntosLocal', -1)" class="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition text-gray-500 font-bold text-lg">-</button>
+                                <input type="text" name="puntosLocal" id="puntosLocal" value="0" inputmode="numeric" pattern="[0-9]*"
+                                       class="hide-spinner w-20 text-center text-3xl font-bold text-gray-800 border-2 border-gray-200 rounded-xl py-3 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none">
+                                <button type="button" onclick="adjustScore('puntosLocal', 1)" class="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition text-gray-500 font-bold text-lg">+</button>
+                            </div>
+                        </div>
+                        <div class="text-center pt-8">
+                            <span class="text-3xl font-black text-gray-200">:</span>
+                        </div>
+                        <div class="text-center">
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Goles Visitante</label>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="adjustScore('puntosVisitante', -1)" class="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition text-gray-500 font-bold text-lg">-</button>
+                                <input type="text" name="puntosVisitante" id="puntosVisitante" value="0" inputmode="numeric" pattern="[0-9]*"
+                                       class="hide-spinner w-20 text-center text-3xl font-bold text-gray-800 border-2 border-gray-200 rounded-xl py-3 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none">
+                                <button type="button" onclick="adjustScore('puntosVisitante', 1)" class="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition text-gray-500 font-bold text-lg">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center pt-4">
+                        <button type="submit" class="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+                            Finalizar Partido
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    .hide-spinner::-webkit-outer-spin-button,
+    .hide-spinner::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    .hide-spinner { -moz-appearance: textfield; }
+</style>
+<script>
+    function adjustScore(id, delta) {
+        const input = document.getElementById(id);
+        let val = parseInt(input.value) || 0;
+        val = Math.max(0, Math.min(99, val + delta));
+        input.value = val;
+    }
+    document.querySelectorAll('.hide-spinner').forEach(inp => {
+        inp.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '');
+            if (this.value === '') this.value = '0';
+            let v = parseInt(this.value);
+            if (v > 99) this.value = '99';
+        });
+    });
+</script>
+</div>
+</body>
+</html>

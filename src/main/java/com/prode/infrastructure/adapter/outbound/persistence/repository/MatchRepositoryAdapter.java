@@ -44,14 +44,14 @@ public class MatchRepositoryAdapter implements MatchRepository {
 
     @Override
     public List<Match> findByRoundId(Long roundId) {
-        return jpaMatchRepository.findByJornadaIdOrderByFechaAsc(roundId).stream()
+        return jpaMatchRepository.findByJornadaIdWithRelations(roundId).stream()
                 .map(MatchMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
     public Page<Match> findByRoundId(Long roundId, Pageable pageable) {
-        return jpaMatchRepository.findByJornadaIdOrderByFechaAsc(roundId, pageable)
+        return jpaMatchRepository.findByJornadaIdWithRelations(roundId, pageable)
                 .map(MatchMapper::toDomain);
     }
 
@@ -64,14 +64,14 @@ public class MatchRepositoryAdapter implements MatchRepository {
 
     @Override
     public List<Match> findAllOrderByFechaAsc() {
-        return jpaMatchRepository.findAllByOrderByFechaAsc().stream()
+        return jpaMatchRepository.findAllWithRelationsByOrderByFechaAsc().stream()
                 .map(MatchMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
     public Page<Match> findAllOrderByFechaAsc(Pageable pageable) {
-        return jpaMatchRepository.findAllByOrderByFechaAsc(pageable)
+        return jpaMatchRepository.findAllWithRelationsByOrderByFechaAsc(pageable)
                 .map(MatchMapper::toDomain);
     }
 

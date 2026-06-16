@@ -1,6 +1,7 @@
 package com.prode.infrastructure.adapter.inbound.web;
 
 import com.prode.application.dto.request.MatchRequest;
+import com.prode.application.dto.request.MatchResultRequest;
 import com.prode.application.service.MatchService;
 import com.prode.application.service.RoundService;
 import com.prode.application.service.TeamService;
@@ -74,6 +75,24 @@ public class MatchWebController {
         try {
             matchService.update(id, request);
             redirect.addFlashAttribute("success", "Partido actualizado exitosamente");
+        } catch (Exception e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/matches";
+    }
+
+    @GetMapping("/{id}/finalizar")
+    public String finalizeForm(@PathVariable Long id, Model model) {
+        model.addAttribute("match", matchService.findById(id));
+        model.addAttribute("matchResultRequest", new MatchResultRequest());
+        return "matches/finalizar";
+    }
+
+    @PostMapping("/{id}/finalizar")
+    public String finalize(@PathVariable Long id, @ModelAttribute MatchResultRequest request, RedirectAttributes redirect) {
+        try {
+            matchService.finalize(id, request.getPuntosLocal(), request.getPuntosVisitante());
+            redirect.addFlashAttribute("success", "Partido finalizado exitosamente");
         } catch (Exception e) {
             redirect.addFlashAttribute("error", e.getMessage());
         }

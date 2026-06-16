@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="es"
-      th:fragment="layout(pageTitle, page)">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="es" th:fragment="layout(pageTitle, page)">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,7 +78,8 @@
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold text-gray-800" th:text="${pageTitle} ?: 'Dashboard'">Dashboard</h2>
                 <div class="flex items-center gap-4">
-                    <span class="text-sm text-gray-500">TPI - Programacion IV</span>
+                    <span class="text-sm text-gray-500" sec:authentication="name">admin</span>
+                    <a href="/api/users/logout" onclick="event.preventDefault(); logout()" class="text-sm text-red-500 hover:text-red-700 font-medium">Cerrar sesion</a>
                 </div>
             </div>
         </header>
@@ -146,6 +147,13 @@
         document.getElementById('deleteModal')?.addEventListener('click', function(e) {
             if (e.target === this) closeDeleteModal();
         });
+
+        async function logout() {
+            try {
+                await fetch('/api/users/logout', { method: 'POST' });
+            } catch (e) {}
+            window.location.href = '/users/login';
+        }
     </script>
 </body>
 </html>
