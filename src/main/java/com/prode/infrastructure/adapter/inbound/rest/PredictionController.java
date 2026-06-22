@@ -41,7 +41,6 @@ public class PredictionController {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
             return ResponseEntity.ok(predictionService.findByUserId(userId));
         }
-        // Default: return current user's predictions
         return ResponseEntity.ok(predictionService.findByUserEmail(authentication.getName()));
     }
 

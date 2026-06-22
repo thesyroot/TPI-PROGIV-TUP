@@ -37,7 +37,6 @@ public class UserService {
         user.setApellido(request.getApellido());
         user.setEmail(request.getEmail());
         
-        // Hashing seguro
         user.setContrasenia(passwordEncoder.encode(request.getContrasenia()));
         
         user.setRol(RolUsuario.USER);

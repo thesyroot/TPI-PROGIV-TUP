@@ -23,7 +23,7 @@ public class UserWebController {
 
     @GetMapping("/login")
     public String loginForm() {
-        return "Users/login"; // Renderiza el login.html
+        return "Users/login"; 
     }
 
     @GetMapping("/new")

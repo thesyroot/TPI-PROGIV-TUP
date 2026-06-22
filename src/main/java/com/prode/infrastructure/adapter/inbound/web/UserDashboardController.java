@@ -1,6 +1,5 @@
 package com.prode.infrastructure.adapter.inbound.web;
 
-
 import com.prode.application.service.MatchService;
 import com.prode.application.service.RankingService;
 import com.prode.application.service.RoundService;
@@ -16,8 +15,8 @@ import java.util.List;
 @RequestMapping("/user")
 public class UserDashboardController {
 
-    private final RoundService  roundService;
-    private final MatchService  matchService;
+    private final RoundService   roundService;
+    private final MatchService   matchService;
     private final RankingService rankingService;
 
     public UserDashboardController(RoundService roundService,
@@ -39,18 +38,51 @@ public class UserDashboardController {
         return "user/dashboard";
     }
 
+    @GetMapping("/ranking/buscar")
+public String buscarUsuarios(
+        @RequestParam(required = false, defaultValue = "") String nombre,
+        @RequestParam(required = false) List<Long> userIds,
+        Model model) {
+
+    List<Long> idsSeleccionados =
+            userIds != null ? userIds.stream().distinct().toList() : List.of();
+
+    model.addAttribute("nombre", nombre);
+
+    model.addAttribute(
+            "resultados",
+            nombre.isBlank()
+                    ? List.of()
+                    : rankingService.buscarUsuariosPorNombre(nombre)
+    );
+
+    model.addAttribute("userIds", idsSeleccionados);
+
+    model.addAttribute(
+            "usuariosSeleccionados",
+            rankingService.getUsuariosPorIds(idsSeleccionados)
+    );
+
+    model.addAttribute("pageTitle", "Buscar jugadores");
+
+    return "user/ranking-buscar";
+}
     @GetMapping("/ranking")
-    public String ranking(@RequestParam(required = false) List<Long> userIds, Model model) {
-        boolean filtrado = userIds != null && !userIds.isEmpty();
+    public String ranking(
+            @RequestParam(required = false) List<Long> userIds,
+            Model model) {
 
-        model.addAttribute("ranking",
-                filtrado ? rankingService.getRankingFiltrado(userIds)
-                         : rankingService.getRankingGlobal());
+        boolean haySeleccion = userIds != null && !userIds.isEmpty();
 
-        model.addAttribute("usuarios",   rankingService.getUsuariosDisponibles());
-        model.addAttribute("userIds",    userIds != null ? userIds : List.of());
-        model.addAttribute("filtrado",   filtrado);
-        model.addAttribute("pageTitle",  "Ranking");
+        model.addAttribute("ranking", haySeleccion
+                ? rankingService.getRankingFiltrado(userIds)
+                : rankingService.getRankingGlobal());
+        model.addAttribute("usuariosSeleccionados", haySeleccion
+                ? rankingService.getUsuariosPorIds(userIds)
+                : List.of());
+        model.addAttribute("userIds",  userIds != null ? userIds : List.of());
+        model.addAttribute("filtrado", haySeleccion);
+        model.addAttribute("pageTitle", "Ranking");
         return "user/ranking";
     }
 }
