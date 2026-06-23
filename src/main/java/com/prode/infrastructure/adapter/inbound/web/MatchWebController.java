@@ -1,17 +1,23 @@
 package com.prode.infrastructure.adapter.inbound.web;
 
-import com.prode.application.dto.request.MatchRequest;
-import com.prode.application.dto.request.MatchResultRequest;
-import com.prode.application.service.MatchService;
-import com.prode.application.service.RoundService;
-import com.prode.application.service.TeamService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes; 
+
+import com.prode.application.dto.request.MatchRequest;
+import com.prode.application.dto.request.MatchResultRequest;
+import com.prode.application.service.MatchService;
+import com.prode.application.service.RoundService;
+import com.prode.application.service.TeamService;
 
 @Controller
 @RequestMapping("/matches")
@@ -75,6 +81,18 @@ public class MatchWebController {
         try {
             matchService.update(id, request);
             redirect.addFlashAttribute("success", "Partido actualizado exitosamente");
+        } catch (Exception e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/matches";
+    }
+
+    @PostMapping("/{id}/start")
+    public String startMatch(@PathVariable Long id, RedirectAttributes redirect) {
+        try {
+            matchService.startMatch(id);
+            redirect.addFlashAttribute("success",
+                    "El partido ha comenzado oficialmente. Estado de jornada verificado.");
         } catch (Exception e) {
             redirect.addFlashAttribute("error", e.getMessage());
         }

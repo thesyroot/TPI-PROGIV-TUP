@@ -1,8 +1,17 @@
 package com.prode.application.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.prode.application.dto.request.MatchRequest;
 import com.prode.application.dto.response.MatchResponse;
+import com.prode.domain.enums.EstadoJornada;
 import com.prode.domain.enums.EstadoPartido;
 import com.prode.domain.model.Match;
 import com.prode.domain.model.Round;
@@ -12,13 +21,6 @@ import com.prode.domain.port.outbound.RoundRepository;
 import com.prode.domain.port.outbound.TeamRepository;
 import com.prode.shared.exception.BusinessException;
 import com.prode.shared.exception.ResourceNotFoundException;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -117,6 +119,25 @@ public class MatchService {
         matchRepository.deleteById(id);
     }
 
+    // RF4.3: Transición manual a "En juego" de un partido por el administrador.
+
+    public MatchResponse startMatch(Long id) {
+        Match match = matchRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Partido no encontrado con id: " + id));
+
+        if (match.getEstado() != EstadoPartido.POR_JUGARSE) {
+            throw new BusinessException("Solo se pueden iniciar partidos en estado POR_JUGARSE");
+        }
+
+        match.setEstado(EstadoPartido.EN_JUEGO);
+        Match updated = matchRepository.update(match);
+
+        if (match.getRound() != null) {
+            recalculateRoundState(match.getRound().getId());
+        }
+
+        return toResponse(updated);
+    }
 
     public MatchResponse finalize(Long id, Integer localScore, Integer visitanteScore) {
         Match match = matchRepository.findById(id)
@@ -135,7 +156,51 @@ public class MatchService {
 
         scoringService.procesarPuntos(id);
 
+        if (match.getRound() != null) {
+            recalculateRoundState(match.getRound().getId());
+        }
+
         return toResponse(updated);
+    }
+
+    // RF3.3: Gestión Automática de Estados de la Fecha.
+     
+    private void recalculateRoundState(Long roundId) {
+        Round round = roundRepository.findById(roundId)
+                .orElseThrow(() -> new ResourceNotFoundException("Jornada no encontrada con id: " + roundId));
+
+        List<Match> matches = matchRepository.findByRoundId(roundId);
+
+        if (matches.isEmpty()) {
+            round.setEstado(EstadoJornada.PROGRAMADA);
+            roundRepository.update(round);
+            return;
+        }
+
+        boolean anyEnJuego = matches.stream()
+                .anyMatch(m -> m.getEstado() == EstadoPartido.EN_JUEGO);
+                
+        boolean allFinalizados = matches.stream()
+                .allMatch(m -> m.getEstado() == EstadoPartido.FINALIZADO);
+                
+        boolean allPorJugarse = matches.stream()
+                .allMatch(m -> m.getEstado() == EstadoPartido.POR_JUGARSE);
+
+        EstadoJornada nuevoEstado;
+        if (anyEnJuego) {
+            nuevoEstado = EstadoJornada.EN_JUEGO;
+        } else if (allFinalizados) {
+            nuevoEstado = EstadoJornada.FINALIZADA;
+        } else if (allPorJugarse) {
+            nuevoEstado = EstadoJornada.PROGRAMADA;
+        } else {
+            nuevoEstado = EstadoJornada.EN_JUEGO;
+        }
+
+        if (round.getEstado() != nuevoEstado) {
+            round.setEstado(nuevoEstado);
+            roundRepository.update(round);
+        }
     }
 
     public boolean existsMatchWithTeam(Long teamId) {
