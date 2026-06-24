@@ -41,7 +41,7 @@ public interface JpaMatchRepository extends JpaRepository<MatchEntity, Long> {
        @Query("SELECT m FROM MatchEntity m JOIN FETCH m.jornada JOIN FETCH m.equipoLocal JOIN FETCH m.equipoVisitante ORDER BY m.fecha ASC")
        List<MatchEntity> findAllWithRelationsByOrderByFechaAsc();
 
-    List<MatchEntity> findAllWithRelationsByOrderByFechaAsc();
+       @Query(value = "SELECT m FROM MatchEntity m JOIN FETCH m.jornada JOIN FETCH m.equipoLocal JOIN FETCH m.equipoVisitante ORDER BY m.fecha ASC", countQuery = "SELECT COUNT(m) FROM MatchEntity m")
        Page<MatchEntity> findAllWithRelationsByOrderByFechaAsc(Pageable pageable);
 
        @Query("SELECT m FROM MatchEntity m JOIN FETCH m.jornada JOIN FETCH m.equipoLocal JOIN FETCH m.equipoVisitante WHERE m.jornada.id = :jornadaId ORDER BY m.fecha ASC")
