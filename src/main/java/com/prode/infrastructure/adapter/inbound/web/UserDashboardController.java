@@ -1,15 +1,16 @@
 package com.prode.infrastructure.adapter.inbound.web;
 
-import com.prode.application.service.MatchService;
-import com.prode.application.service.RankingService;
-import com.prode.application.service.RoundService;
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.List;
+import com.prode.application.service.MatchService;
+import com.prode.application.service.RankingService;
+import com.prode.application.service.RoundService;
 
 @Controller
 @RequestMapping("/user")
@@ -30,7 +31,7 @@ public class UserDashboardController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("totalRounds", roundService.findAll(null).size());
-        model.addAttribute("totalMatches", matchService.findAll(null).size());
+        model.addAttribute("totalMatches", matchService.countFutureMatches());
         model.addAttribute("proximosPartidos", matchService.findAll(null).stream()
                 .filter(m -> "POR_JUGARSE".equals(m.getEstado()))
                 .limit(5).toList());

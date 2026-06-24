@@ -1,5 +1,6 @@
 package com.prode.application.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,6 +63,13 @@ public class MatchService {
         Match match = matchRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Partido no encontrado con id: " + id));
         return toResponse(match);
+    }
+
+    @Transactional(readOnly = true)
+    public long countFutureMatches() {
+        // Obtenemos la fecha actual y le sumamos 30 minutos
+        LocalDateTime fechaLimite = LocalDateTime.now().plusMinutes(30);
+        return matchRepository.countByFechaAfter(fechaLimite);
     }
 
     public MatchResponse create(MatchRequest request) {

@@ -1,18 +1,19 @@
 package com.prode.infrastructure.adapter.outbound.persistence.repository;
 
-import com.prode.domain.model.Match;
-import com.prode.domain.enums.EstadoPartido;
-import com.prode.domain.port.outbound.MatchRepository;
-import com.prode.infrastructure.adapter.outbound.persistence.entity.MatchEntity;
-import com.prode.infrastructure.adapter.outbound.persistence.entity.RoundEntity;
-import com.prode.infrastructure.adapter.outbound.persistence.entity.TeamEntity;
-import com.prode.infrastructure.adapter.outbound.persistence.mapper.MatchMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
+
+import com.prode.domain.enums.EstadoPartido;
+import com.prode.domain.model.Match;
+import com.prode.domain.port.outbound.MatchRepository;
+import com.prode.infrastructure.adapter.outbound.persistence.entity.MatchEntity;
+import com.prode.infrastructure.adapter.outbound.persistence.mapper.MatchMapper;
 
 @Repository
 public class MatchRepositoryAdapter implements MatchRepository {
@@ -131,5 +132,10 @@ public class MatchRepositoryAdapter implements MatchRepository {
     @Override
     public boolean existsMatchWithTeam(Long teamId) {
         return jpaMatchRepository.existsMatchWithTeam(teamId);
+    }
+
+    @Override
+    public long countByFechaAfter(LocalDateTime fecha) {
+        return jpaMatchRepository.countByFechaAfter(fecha); 
     }
 }
