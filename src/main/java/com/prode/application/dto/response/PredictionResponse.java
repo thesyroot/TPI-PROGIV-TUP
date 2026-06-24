@@ -1,9 +1,11 @@
 package com.prode.application.dto.response;
 
+import java.time.LocalDateTime;
+
 import com.prode.domain.enums.EstadoPrediccion;
 import com.prode.domain.enums.Tendencia;
+
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.LocalDateTime;
 
 @Schema(description = "Prediction response")
 public class PredictionResponse {
@@ -59,6 +61,9 @@ public class PredictionResponse {
     @Schema(description = "Points awarded for this prediction (null if not resolved yet)")
     private Integer puntosObtenidos;
 
+    @Schema(description = "Indicates if the prediction can no longer be edited (less than 30 mins to match or already started/finished)", example = "true")
+    private boolean bloqueado;
+
     public PredictionResponse() {}
 
     public Long getId() { return id; }
@@ -95,4 +100,6 @@ public class PredictionResponse {
     public void setFechaModificacion(LocalDateTime fechaModificacion) { this.fechaModificacion = fechaModificacion; }
     public Integer getPuntosObtenidos() { return puntosObtenidos; }
     public void setPuntosObtenidos(Integer puntosObtenidos) { this.puntosObtenidos = puntosObtenidos; }
+    public boolean isBloqueado() { return bloqueado; }
+    public void setBloqueado(boolean bloqueado) { this.bloqueado = bloqueado; }
 }

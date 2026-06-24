@@ -1,5 +1,14 @@
 package com.prode.application.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.prode.application.dto.request.PredictionRequest;
 import com.prode.application.dto.response.PredictionResponse;
 import com.prode.domain.enums.EstadoPartido;
@@ -13,13 +22,6 @@ import com.prode.domain.port.outbound.PredictionRepository;
 import com.prode.domain.port.outbound.UserRepository;
 import com.prode.shared.exception.BusinessException;
 import com.prode.shared.exception.ResourceNotFoundException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -30,8 +32,8 @@ public class PredictionService {
     private final UserRepository userRepository;
 
     public PredictionService(PredictionRepository predictionRepository,
-                              MatchRepository matchRepository,
-                              UserRepository userRepository) {
+            MatchRepository matchRepository,
+            UserRepository userRepository) {
         this.predictionRepository = predictionRepository;
         this.matchRepository = matchRepository;
         this.userRepository = userRepository;
@@ -78,9 +80,31 @@ public class PredictionService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PredictionResponse> findAllFiltered(Long matchId, Long jornadaId, Long usuarioId, Pageable pageable) {
-        return predictionRepository.findAllFiltered(matchId, jornadaId, usuarioId, pageable)
-                .map(this::toResponse);
+    public Page<PredictionResponse> findAllFilteredSecure(Long matchId, Long jornadaId, Long usuarioId,
+            String currentEmail, boolean isAdmin, Pageable pageable) {
+
+        // Obtenemos todos los pronósticos de la base de datos según los filtros de
+        // búsqueda
+        Page<Prediction> predictions = predictionRepository.findAllFiltered(matchId, jornadaId, usuarioId, pageable);
+
+        return predictions.map(p -> {
+            PredictionResponse res = toResponse(p);
+
+            // Evaluamos las condiciones de privacidad
+            boolean isOwner = p.getUser().getEmail().equals(currentEmail);
+            boolean isLocked = p.getMatch().getFecha().minusMinutes(30).isBefore(LocalDateTime.now());
+
+            // Si NO es el dueño, NO es admin, y el partido NO está bloqueado -> Ocultamos
+            // los números
+            if (!isOwner && !isAdmin && !isLocked) {
+                res.setPuntosLocal(null);
+                res.setPuntosVisitante(null);
+                // Opcional: También puedes ocultar la tendencia si quieres total privacidad
+                res.setTendencia(null);
+            }
+
+            return res;
+        });
     }
 
     @Transactional(readOnly = true)
@@ -92,7 +116,8 @@ public class PredictionService {
 
     public PredictionResponse create(PredictionRequest request, String userEmail) {
         Match match = matchRepository.findById(request.getMatchId())
-                .orElseThrow(() -> new ResourceNotFoundException("Partido no encontrado con id: " + request.getMatchId()));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Partido no encontrado con id: " + request.getMatchId()));
 
         validateMatchForPrediction(match);
 
@@ -185,13 +210,16 @@ public class PredictionService {
             throw new BusinessException("No se puede modificar un pronostico ya resuelto");
         }
         if (match.getFecha().minusMinutes(30).isBefore(LocalDateTime.now())) {
-            throw new BusinessException("No se puede modificar un pronostico cuando faltan menos de 30 minutos para el partido");
+            throw new BusinessException(
+                    "No se puede modificar un pronostico cuando faltan menos de 30 minutos para el partido");
         }
     }
 
     private Tendencia calculateTendencia(Integer local, Integer visitante) {
-        if (local > visitante) return Tendencia.LOCAL;
-        if (local < visitante) return Tendencia.VISITANTE;
+        if (local > visitante)
+            return Tendencia.LOCAL;
+        if (local < visitante)
+            return Tendencia.VISITANTE;
         return Tendencia.EMPATE;
     }
 
@@ -218,6 +246,11 @@ public class PredictionService {
         if (prediction.getPoints() != null) {
             response.setPuntosObtenidos(prediction.getPoints().getValor());
         }
+
+        // Validación de edicion y observación de predicción dentro de 30 minutos previos al partido
+        boolean isLocked = prediction.getMatch().getFecha().minusMinutes(30).isBefore(LocalDateTime.now());
+        response.setBloqueado(isLocked); 
+
         return response;
     }
 }
