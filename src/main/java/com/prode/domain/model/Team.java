@@ -8,6 +8,7 @@ public class Team {
     private String nombre;
     private Boolean activo;
     private String imagenUrl;
+    private Long roundId;
     private List<Player> players;
 
     public Team() {
@@ -30,6 +31,9 @@ public class Team {
     public void setActivo(Boolean activo) { this.activo = activo; }
     public String getImagenUrl() { return imagenUrl; }
     public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
+    public Long getRoundId() { return roundId; }
+    public void setRoundId(Long roundId) { this.roundId = roundId; }
     public List<Player> getPlayers() { return players; }
     public void setPlayers(List<Player> players) { this.players = players; }
+
 }

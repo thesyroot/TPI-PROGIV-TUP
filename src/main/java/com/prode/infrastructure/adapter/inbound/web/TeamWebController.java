@@ -1,18 +1,25 @@
 package com.prode.infrastructure.adapter.inbound.web;
 
-import com.prode.application.dto.request.TeamRequest;
-import com.prode.application.dto.response.PlayerResponse;
-import com.prode.application.service.PlayerService;
-import com.prode.application.service.TeamService;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import java.util.Map;
-import java.util.stream.Collectors;
+
+import com.prode.application.dto.request.TeamRequest;
+import com.prode.application.dto.response.PlayerResponse;
+import com.prode.application.service.PlayerService;
+import com.prode.application.service.RoundService;
+import com.prode.application.service.TeamService;
 
 @Controller
 @RequestMapping("/teams")
@@ -20,10 +27,12 @@ public class TeamWebController {
 
     private final TeamService teamService;
     private final PlayerService playerService;
+    private final RoundService roundService;
 
-    public TeamWebController(TeamService teamService, PlayerService playerService) {
+    public TeamWebController(TeamService teamService, PlayerService playerService, RoundService roundService) {
         this.teamService = teamService;
         this.playerService = playerService;
+        this.roundService = roundService;
     }
 
     @GetMapping
@@ -43,6 +52,7 @@ public class TeamWebController {
     public String createForm(Model model) {
         model.addAttribute("teamRequest", new TeamRequest());
         model.addAttribute("allPlayers", playerService.findUnassigned());
+        model.addAttribute("rounds", roundService.findAll((String) null));
         return "teams/form";
     }
 
@@ -63,6 +73,7 @@ public class TeamWebController {
         TeamRequest request = new TeamRequest();
         request.setNombre(team.getNombre());
         request.setImagenUrl(team.getImagenUrl());
+        request.setRoundId(team.getRoundId());
         Map<Long, String> assignedRoles = team.getJugadores().stream()
                 .collect(Collectors.toMap(PlayerResponse::getId,
                         p -> p.getRol() != null ? p.getRol() : ""));
@@ -70,6 +81,7 @@ public class TeamWebController {
         model.addAttribute("teamRequest", request);
         model.addAttribute("teamId", id);
         model.addAttribute("allPlayers", playerService.findUnassignedOrByTeamId(id));
+        model.addAttribute("rounds", roundService.findAll((String) null));
         return "teams/form";
     }
 

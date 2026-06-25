@@ -1,9 +1,10 @@
 package com.prode.application.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 
 @Schema(description = "Request para crear o actualizar un equipo")
 public class TeamRequest {
@@ -15,6 +16,9 @@ public class TeamRequest {
     @Schema(description = "URL de la imagen/escudo del equipo")
     private String imagenUrl;
 
+    @Schema(description = "ID de la jornada a la que pertenece el equipo")
+    private Long roundId;
+
     @Schema(description = "Roles de jugadores asignados al equipo (playerId -> rol)")
     private Map<Long, String> roles = new HashMap<>();
 
@@ -24,4 +28,6 @@ public class TeamRequest {
     public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
     public Map<Long, String> getRoles() { return roles; }
     public void setRoles(Map<Long, String> roles) { this.roles = roles; }
+    public Long getRoundId() { return roundId; }
+    public void setRoundId(Long roundId) { this.roundId = roundId; }
 }

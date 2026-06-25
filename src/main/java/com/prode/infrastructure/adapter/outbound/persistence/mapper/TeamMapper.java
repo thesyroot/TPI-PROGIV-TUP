@@ -12,6 +12,7 @@ public class TeamMapper {
         team.setNombre(entity.getNombre());
         team.setActivo(entity.getActivo());
         team.setImagenUrl(entity.getImagenUrl());
+        team.setRoundId(entity.getRoundId());
         return team;
     }
 
@@ -22,6 +23,7 @@ public class TeamMapper {
         entity.setNombre(domain.getNombre());
         entity.setActivo(domain.getActivo());
         entity.setImagenUrl(domain.getImagenUrl());
+        entity.setRoundId(domain.getRoundId());
         return entity;
     }
 }

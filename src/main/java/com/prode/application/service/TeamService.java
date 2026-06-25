@@ -1,19 +1,27 @@
 package com.prode.application.service;
 
-import com.prode.application.dto.request.TeamRequest;
-import com.prode.application.dto.response.PlayerResponse;
-import com.prode.application.dto.response.TeamResponse;
-import com.prode.domain.model.Team;
-import com.prode.domain.port.outbound.PlayerRepository;
-import com.prode.domain.port.outbound.TeamRepository;
-import com.prode.shared.exception.BusinessException;
-import com.prode.shared.exception.ResourceNotFoundException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.*;
-import java.util.stream.Collectors;
+
+import com.prode.application.dto.request.TeamRequest;
+import com.prode.application.dto.response.PlayerResponse;
+import com.prode.application.dto.response.TeamResponse;
+import com.prode.domain.model.Round;
+import com.prode.domain.model.Team;
+import com.prode.domain.port.outbound.PlayerRepository;
+import com.prode.domain.port.outbound.RoundRepository;
+import com.prode.domain.port.outbound.TeamRepository;
+import com.prode.shared.exception.BusinessException;
+import com.prode.shared.exception.ResourceNotFoundException;
 
 @Service
 @Transactional
@@ -22,11 +30,14 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
     private final MatchService matchService;
+    private final RoundRepository roundRepository;
 
-    public TeamService(TeamRepository teamRepository, PlayerRepository playerRepository, MatchService matchService) {
+    public TeamService(TeamRepository teamRepository, PlayerRepository playerRepository, MatchService matchService,
+            RoundRepository roundRepository) {
         this.teamRepository = teamRepository;
         this.playerRepository = playerRepository;
         this.matchService = matchService;
+        this.roundRepository = roundRepository;
     }
 
     @Transactional(readOnly = true)
@@ -67,12 +78,13 @@ public class TeamService {
     }
 
     public TeamResponse create(TeamRequest request) {
-        if (teamRepository.existsByNombre(request.getNombre())) {
-            throw new BusinessException("Ya existe un equipo con el nombre: " + request.getNombre());
+        if (teamRepository.existsByNombreAndRoundId(request.getNombre(), request.getRoundId())) {
+            throw new BusinessException("Ya existe un equipo con ese nombre en esa jornada");
         }
         Team team = new Team();
         team.setNombre(request.getNombre());
         team.setImagenUrl(request.getImagenUrl());
+        team.setRoundId(request.getRoundId());
         team.setActivo(true);
         Team saved = teamRepository.save(team);
         syncPlayerAssignments(saved.getId(), request.getRoles());
@@ -82,11 +94,18 @@ public class TeamService {
     public TeamResponse update(Long id, TeamRequest request) {
         Team team = teamRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Equipo no encontrado con id: " + id));
-        if (!team.getNombre().equals(request.getNombre()) && teamRepository.existsByNombre(request.getNombre())) {
-            throw new BusinessException("Ya existe un equipo con el nombre: " + request.getNombre());
+
+        boolean nombreCambio = !team.getNombre().equals(request.getNombre());
+        boolean jornadaCambio = !Objects.equals(team.getRoundId(), request.getRoundId());
+
+        if ((nombreCambio || jornadaCambio) &&
+                teamRepository.existsByNombreAndRoundId(request.getNombre(), request.getRoundId())) {
+            throw new BusinessException("Ya existe un equipo con ese nombre en esa jornada");
         }
+
         team.setNombre(request.getNombre());
         team.setImagenUrl(request.getImagenUrl());
+        team.setRoundId(request.getRoundId());
         Team updated = teamRepository.update(team);
         syncPlayerAssignments(id, request.getRoles());
         return toResponse(updated);
@@ -117,15 +136,23 @@ public class TeamService {
     }
 
     private List<TeamResponse> toResponseList(List<Team> teams) {
-        if (teams.isEmpty()) return Collections.emptyList();
+        if (teams.isEmpty())
+            return Collections.emptyList();
         Set<Long> teamIds = teams.stream().map(Team::getId).collect(Collectors.toSet());
         Map<Long, Integer> counts = teamRepository.countActivePlayersByTeamIds(teamIds);
+        Map<Long, String> roundNames = roundRepository.findAll().stream()
+                .collect(Collectors.toMap(Round::getId, Round::getNombre, (b1, b2) -> b1));
         return teams.stream().map(t -> {
             TeamResponse r = new TeamResponse();
             r.setId(t.getId());
             r.setNombre(t.getNombre());
             r.setImagenUrl(t.getImagenUrl());
+            r.setRoundId(t.getRoundId());
             r.setCantidadJugadores(counts.getOrDefault(t.getId(), 0));
+            // si no es null le asignamos el nombre
+            if (t.getRoundId() != null) {
+                r.setRoundNombre(roundNames.get(t.getRoundId()));
+            }
             return r;
         }).collect(Collectors.toList());
     }
@@ -135,6 +162,12 @@ public class TeamService {
         response.setId(team.getId());
         response.setNombre(team.getNombre());
         response.setImagenUrl(team.getImagenUrl());
+        response.setRoundId(team.getRoundId());
+        // si no es null asignamos el nombre
+        if (team.getRoundId() != null) {
+            roundRepository.findById(team.getRoundId())
+                    .ifPresent(r -> response.setRoundNombre(r.getNombre()));
+        }
         response.setCantidadJugadores(teamRepository.countActivePlayersByTeamId(team.getId()));
         return response;
     }

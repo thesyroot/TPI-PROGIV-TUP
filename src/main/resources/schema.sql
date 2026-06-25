@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS Equipo (
     id BIGSERIAL PRIMARY KEY,
     nombre VARCHAR(150) NOT NULL UNIQUE,
     activo BOOLEAN DEFAULT TRUE,
-    imagen_url VARCHAR(500)
+    imagen_url VARCHAR(500),
+    id_jornada BIGINT
 );
 
 CREATE TABLE IF NOT EXISTS Jugador (
@@ -89,3 +90,8 @@ CREATE TABLE IF NOT EXISTS token_revocado (
     token VARCHAR(500) NOT NULL UNIQUE,
     fecha_revocacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE Equipo ADD COLUMN IF NOT EXISTS id_jornada BIGINT;
+ALTER TABLE Equipo DROP CONSTRAINT IF EXISTS equipo_nombre_key;
+ALTER TABLE Equipo DROP CONSTRAINT IF EXISTS unique_nombre_jornada;
+ALTER TABLE Equipo ADD CONSTRAINT unique_nombre_jornada UNIQUE(nombre, id_jornada);

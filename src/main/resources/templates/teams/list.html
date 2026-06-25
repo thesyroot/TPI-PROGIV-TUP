@@ -37,7 +37,13 @@
                                 <span th:text="${#strings.substring(team.nombre, 0, 2)}">AB</span>
                             </div>
                             <div>
-                                <p class="font-medium text-gray-900" th:text="${team.nombre}">Nombre</p>
+                                <p class="font-medium text-gray-900">
+                                    <span th:text="${team.nombre}">Nombre</span>
+                                    <span th:if="${team.roundNombre}" 
+                                          th:text="' (' + ${team.roundNombre} + ')'" 
+                                          class="text-xs text-gray-500 font-normal bg-gray-100 px-2 py-0.5 rounded-full ml-1">
+                                    </span>
+                                </p>
                             </div>
                         </div>
                     </td>

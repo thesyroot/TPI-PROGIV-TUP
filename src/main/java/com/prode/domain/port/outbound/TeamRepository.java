@@ -1,12 +1,14 @@
 package com.prode.domain.port.outbound;
 
-import com.prode.domain.model.Team;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import com.prode.domain.model.Team;
 
 public interface TeamRepository {
     List<Team> findAll();
@@ -17,7 +19,7 @@ public interface TeamRepository {
     Team update(Team team);
     void deleteById(Long id);
     boolean existsById(Long id);
-    boolean existsByNombre(String nombre);
+    boolean existsByNombreAndRoundId(String nombre, Long roundId);
     void assignPlayerToTeam(Long teamId, Long playerId, String rol);
     void removePlayerFromTeam(Long teamId, Long playerId);
     void removeAllPlayersFromTeam(Long teamId);

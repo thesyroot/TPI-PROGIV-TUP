@@ -1,16 +1,22 @@
 package com.prode.infrastructure.adapter.outbound.persistence.repository;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
+
 import com.prode.domain.model.Team;
 import com.prode.domain.port.outbound.TeamRepository;
 import com.prode.infrastructure.adapter.outbound.persistence.entity.PlayerEntity;
 import com.prode.infrastructure.adapter.outbound.persistence.entity.TeamEntity;
 import com.prode.infrastructure.adapter.outbound.persistence.entity.TeamPlayerEntity;
 import com.prode.infrastructure.adapter.outbound.persistence.mapper.TeamMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 public class TeamRepositoryAdapter implements TeamRepository {
@@ -76,8 +82,8 @@ public class TeamRepositoryAdapter implements TeamRepository {
     }
 
     @Override
-    public boolean existsByNombre(String nombre) {
-        return jpaTeamRepository.existsByNombre(nombre);
+    public boolean existsByNombreAndRoundId(String nombre, Long roundId) {
+        return jpaTeamRepository.existsByNombreAndRoundId(nombre, roundId);
     }
 
     @Override
