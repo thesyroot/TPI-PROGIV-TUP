@@ -54,8 +54,8 @@ public class PlayerWebController {
         request.setNombre(player.getNombre());
         request.setApellido(player.getApellido());
         request.setNumeroCamiseta(player.getNumeroCamiseta());
-        request.setEquipoId(player.getEquipoId());
         request.setImagenUrl(player.getImagenUrl());
+        
         model.addAttribute("playerRequest", request);
         model.addAttribute("playerId", id);
         return "players/form";

@@ -1,5 +1,7 @@
 package com.prode.application.dto.response;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Respuesta con datos de un jugador")
@@ -20,14 +22,11 @@ public class PlayerResponse {
     @Schema(description = "URL de la imagen")
     private String imagenUrl;
 
-    @Schema(description = "Rol en el equipo")
-    private String rol;
+    @Schema(description = "Posición más popular del jugador en todos sus equipos")
+    private String posicionPopular;
 
-    @Schema(description = "Nombre del equipo al que pertenece")
-    private String equipoNombre;
-
-    @Schema(description = "ID del equipo")
-    private Long equipoId;
+    @Schema(description = "Lista de equipos únicos en los que jugó")
+    private List<String> equipos;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -39,10 +38,8 @@ public class PlayerResponse {
     public void setNumeroCamiseta(Integer numeroCamiseta) { this.numeroCamiseta = numeroCamiseta; }
     public String getImagenUrl() { return imagenUrl; }
     public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
-    public String getRol() { return rol; }
-    public void setRol(String rol) { this.rol = rol; }
-    public String getEquipoNombre() { return equipoNombre; }
-    public void setEquipoNombre(String equipoNombre) { this.equipoNombre = equipoNombre; }
-    public Long getEquipoId() { return equipoId; }
-    public void setEquipoId(Long equipoId) { this.equipoId = equipoId; }
+    public String getPosicionPopular() { return posicionPopular; }
+    public void setPosicionPopular(String posicionPopular) { this.posicionPopular = posicionPopular; }
+    public List<String> getEquipos() { return equipos; }
+    public void setEquipos(List<String> equipos) { this.equipos = equipos; }
 }

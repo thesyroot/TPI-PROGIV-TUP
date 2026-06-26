@@ -31,7 +31,6 @@
         </div>
     </div>
 
-    <!-- Team Players Section -->
     <div class="mt-8">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-gray-800">Jugadores del equipo</h3>
@@ -44,7 +43,7 @@
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-100">
                         <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Jugador</th>
-                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Rol</th>
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Pos. Principal</th>
                         <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Camiseta</th>
                     </tr>
                 </thead>
@@ -59,7 +58,7 @@
                                 <span class="text-sm font-medium text-gray-900" th:text="${p.nombre + ' ' + p.apellido}">Nombre</span>
                             </div>
                         </td>
-                        <td class="px-6 py-3 text-sm text-gray-600 hidden sm:table-cell" th:text="${p.rol}">Rol</td>
+                        <td class="px-6 py-3 text-sm text-gray-600 hidden sm:table-cell" th:text="${p.posicionPopular != null ? p.posicionPopular : '-'}">Rol</td>
                         <td class="px-6 py-3 text-sm text-gray-600 hidden md:table-cell" th:text="${p.numeroCamiseta}">10</td>
                     </tr>
                 </tbody>

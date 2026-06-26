@@ -31,4 +31,9 @@ public interface TeamRepository {
     Map<Long, Integer> countActivePlayersByTeamIds(Set<Long> teamIds);
     Map<Long, String> findTeamNamesByPlayerIds(Set<Long> playerIds);
     Map<Long, String> findRolesByPlayerIds(Set<Long> playerIds);
+
+    List<String> findAllTeamNamesByPlayerId(Long playerId);
+    List<String> findAllRolesByPlayerId(Long playerId);
+    Map<Long, List<String>> findAllTeamNamesByPlayerIds(Set<Long> playerIds);
+    Map<Long, List<String>> findAllRolesByPlayerIds(Set<Long> playerIds);
 }

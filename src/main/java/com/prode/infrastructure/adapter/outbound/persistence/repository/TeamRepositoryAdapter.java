@@ -1,6 +1,7 @@
 package com.prode.infrastructure.adapter.outbound.persistence.repository;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -176,5 +177,43 @@ public class TeamRepositoryAdapter implements TeamRepository {
                         row -> (Long) row[0],
                         row -> (String) row[1]
                 ));
+    }
+
+    @Override
+    public List<String> findAllTeamNamesByPlayerId(Long playerId) {
+        return jpaTeamPlayerRepository.findAllTeamNamesByPlayerId(playerId);
+    }
+
+    @Override
+    public List<String> findAllRolesByPlayerId(Long playerId) {
+        return jpaTeamPlayerRepository.findAllRolesByPlayerId(playerId);
+    }
+
+    @Override
+    public Map<Long, List<String>> findAllTeamNamesByPlayerIds(Set<Long> playerIds) {
+        if (playerIds == null || playerIds.isEmpty()) return new HashMap<>();
+        
+        List<PlayerDataProjection> results = jpaTeamPlayerRepository.findAllTeamNamesByPlayerIdsNative(playerIds);
+        
+        // Forma tradicional (100% segura para el compilador)
+        Map<Long, List<String>> mapa = new HashMap<>();
+        for (PlayerDataProjection p : results) {
+            mapa.computeIfAbsent(p.getJugadorId(), k -> new java.util.ArrayList<>()).add(p.getDato());
+        }
+        return mapa;
+    }
+
+    @Override
+    public Map<Long, List<String>> findAllRolesByPlayerIds(Set<Long> playerIds) {
+        if (playerIds == null || playerIds.isEmpty()) return new HashMap<>();
+        
+        List<PlayerDataProjection> results = jpaTeamPlayerRepository.findAllRolesByPlayerIdsNative(playerIds);
+        
+        // Forma tradicional (100% segura para el compilador)
+        Map<Long, List<String>> mapa = new HashMap<>();
+        for (PlayerDataProjection p : results) {
+            mapa.computeIfAbsent(p.getJugadorId(), k -> new java.util.ArrayList<>()).add(p.getDato());
+        }
+        return mapa;
     }
 }

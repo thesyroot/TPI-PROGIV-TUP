@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.prode.application.dto.request.TeamRequest;
 import com.prode.application.dto.response.PlayerResponse;
 import com.prode.application.dto.response.TeamResponse;
+import com.prode.domain.model.Player;
 import com.prode.domain.model.Round;
 import com.prode.domain.model.Team;
 import com.prode.domain.port.outbound.PlayerRepository;
@@ -57,8 +58,20 @@ public class TeamService {
         Team team = teamRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Equipo no encontrado con id: " + id));
         TeamResponse response = toResponse(team);
-        Map<Long, String> roles = teamRepository.findPlayerRolesByTeamId(id);
-        List<PlayerResponse> jugadores = playerRepository.findByTeamId(id).stream()
+        
+        List<Player> jugadoresDelEquipo = playerRepository.findByTeamId(id);
+        
+        if (jugadoresDelEquipo.isEmpty()) {
+            response.setJugadores(Collections.emptyList());
+            response.setCantidadJugadores(0);
+            return response;
+        }
+
+        Set<Long> playerIds = jugadoresDelEquipo.stream().map(Player::getId).collect(Collectors.toSet());
+        Map<Long, List<String>> allRoles = teamRepository.findAllRolesByPlayerIds(playerIds);
+        Map<Long, List<String>> allTeamNames = teamRepository.findAllTeamNamesByPlayerIds(playerIds);
+
+        List<PlayerResponse> jugadores = jugadoresDelEquipo.stream()
                 .map(p -> {
                     PlayerResponse pr = new PlayerResponse();
                     pr.setId(p.getId());
@@ -66,12 +79,24 @@ public class TeamService {
                     pr.setApellido(p.getApellido());
                     pr.setNumeroCamiseta(p.getNumeroCamiseta());
                     pr.setImagenUrl(p.getImagenUrl());
-                    pr.setEquipoId(id);
-                    pr.setEquipoNombre(team.getNombre());
-                    pr.setRol(roles.get(p.getId()));
+                    
+                    List<String> equiposJugador = allTeamNames.getOrDefault(p.getId(), Collections.emptyList());
+                    List<String> rolesJugador = allRoles.getOrDefault(p.getId(), Collections.emptyList());
+                    
+                    pr.setEquipos(equiposJugador.stream().distinct().collect(Collectors.toList()));
+                    
+                    pr.setPosicionPopular(rolesJugador.stream()
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.groupingBy(r -> r, Collectors.counting()))
+                            .entrySet().stream()
+                            .max(Map.Entry.comparingByValue())
+                            .map(Map.Entry::getKey)
+                            .orElse(null));
+
                     return pr;
                 })
                 .collect(Collectors.toList());
+                
         response.setJugadores(jugadores);
         response.setCantidadJugadores(jugadores.size());
         return response;
@@ -170,5 +195,9 @@ public class TeamService {
         }
         response.setCantidadJugadores(teamRepository.countActivePlayersByTeamId(team.getId()));
         return response;
+    }
+
+    public Map<Long, String> getPlayerRolesByTeamId(Long teamId) {
+        return teamRepository.findPlayerRolesByTeamId(teamId);
     }
 }

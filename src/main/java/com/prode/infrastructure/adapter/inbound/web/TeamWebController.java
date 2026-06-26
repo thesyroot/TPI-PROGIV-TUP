@@ -51,7 +51,7 @@ public class TeamWebController {
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("teamRequest", new TeamRequest());
-        model.addAttribute("allPlayers", playerService.findUnassigned());
+        model.addAttribute("allPlayers", playerService.findAll()); 
         model.addAttribute("rounds", roundService.findAll((String) null));
         return "teams/form";
     }
@@ -74,13 +74,13 @@ public class TeamWebController {
         request.setNombre(team.getNombre());
         request.setImagenUrl(team.getImagenUrl());
         request.setRoundId(team.getRoundId());
-        Map<Long, String> assignedRoles = team.getJugadores().stream()
-                .collect(Collectors.toMap(PlayerResponse::getId,
-                        p -> p.getRol() != null ? p.getRol() : ""));
+        
+        Map<Long, String> assignedRoles = teamService.getPlayerRolesByTeamId(id);
+        
         request.setRoles(assignedRoles);
         model.addAttribute("teamRequest", request);
         model.addAttribute("teamId", id);
-        model.addAttribute("allPlayers", playerService.findUnassignedOrByTeamId(id));
+        model.addAttribute("allPlayers", playerService.findAll()); 
         model.addAttribute("rounds", roundService.findAll((String) null));
         return "teams/form";
     }
