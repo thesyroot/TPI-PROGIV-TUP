@@ -24,11 +24,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Prevent selecting same team for local and visitor in match form
-    const localSelect = document.getElementById('localId');
-    const visitanteSelect = document.getElementById('visitanteId');
+    // Gestión dinámica del formulario de partidos: Carga de equipos por jornada y validación
+    const jornadaSelect = document.getElementById('jornadaId');
+    const localSelect = document.getElementById('equipoLocalId');
+    const visitanteSelect = document.getElementById('equipoVisitanteId');
 
     if (localSelect && visitanteSelect) {
+        
+        // 1. Validar que no se seleccione el mismo equipo
         function validateTeams() {
             if (localSelect.value && localSelect.value === visitanteSelect.value) {
                 visitanteSelect.setCustomValidity('El equipo visitante debe ser diferente al local');
@@ -39,6 +42,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
         localSelect.addEventListener('change', validateTeams);
         visitanteSelect.addEventListener('change', validateTeams);
+
+        // 2. Cargar equipos dinámicamente si existe el selector de jornada
+        if (jornadaSelect) {
+            jornadaSelect.addEventListener('change', async function(e) {
+                const jornadaId = e.target.value;
+
+                localSelect.innerHTML = '<option value="">Seleccionar...</option>';
+                visitanteSelect.innerHTML = '<option value="">Seleccionar...</option>';
+                
+                if (!jornadaId) return;
+
+                try {
+                    const response = await fetch(`/api/teams?jornadaId=${jornadaId}`);
+                    if (!response.ok) throw new Error('Error al cargar equipos');
+                    
+                    const responseData = await response.json();
+                    const teams = responseData.data || responseData; 
+
+                   teams.forEach(team => {
+                        // El select solo recibe al equipo si tiene un ID y una jornada válidos
+                        if (team.id !== null && team.roundId !== null) {
+                            localSelect.add(new Option(team.nombre, team.id));
+                            visitanteSelect.add(new Option(team.nombre, team.id));
+                        }
+                    });
+                } catch (error) {
+                    console.error("Hubo un problema con la petición:", error);
+                }
+            });
+        }
     }
 
     // Number input: prevent negative values

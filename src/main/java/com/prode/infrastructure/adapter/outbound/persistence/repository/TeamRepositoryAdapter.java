@@ -49,6 +49,12 @@ public class TeamRepositoryAdapter implements TeamRepository {
     }
 
     @Override
+    public Page<Team> findAll(Pageable pageable) {
+        return jpaTeamRepository.findAll(pageable)
+                .map(TeamMapper::toDomain);
+    }
+
+    @Override
     public Page<Team> findAllActive(Pageable pageable) {
         return jpaTeamRepository.findByActivoTrue(pageable)
                 .map(TeamMapper::toDomain);

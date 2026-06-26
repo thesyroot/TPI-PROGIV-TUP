@@ -1,63 +1,78 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout :: layout(pageTitle=(${matchId != null} ? 'Editar Partido' : 'Nuevo Partido'), page=~{::content})}">
+    th:replace="~{layout :: layout(pageTitle=(${matchId != null} ? 'Editar Partido' : 'Nuevo Partido'), page=~{::content})}">
+
 <body>
-<div th:fragment="content">
-    <div class="mb-6">
-        <a href="/matches" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1 mb-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-            Volver a partidos
-        </a>
-        <h2 class="text-2xl font-bold text-gray-800" th:text="${matchId != null} ? 'Editar partido' : 'Nuevo partido'">Formulario</h2>
-    </div>
+    <div th:fragment="content">
+        <div class="mb-6">
+            <a href="/matches"
+                class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1 mb-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Volver a partidos
+            </a>
+            <h2 class="text-2xl font-bold text-gray-800"
+                th:text="${matchId != null} ? 'Editar partido' : 'Nuevo partido'">Formulario</h2>
+        </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-2xl">
-        <form th:action="${matchId != null} ? @{'/matches/' + ${matchId} + '/update'} : @{/matches}" th:object="${matchRequest}" method="POST" class="space-y-5">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-2xl">
+            <form th:action="${matchId != null} ? @{'/matches/' + ${matchId} + '/update'} : @{/matches}"
+                th:object="${matchRequest}" method="POST" class="space-y-5">
 
-            <div>
-                <label for="jornadaId" class="block text-sm font-medium text-gray-700 mb-1">Jornada *</label>
-                <select id="jornadaId" th:field="*{jornadaId}" required
+                <div>
+                    <label for="jornadaId" class="block text-sm font-medium text-gray-700 mb-1">Jornada *</label>
+                    <select id="jornadaId" th:field="*{jornadaId}" required
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition bg-white">
-                    <option value="">Seleccionar jornada...</option>
-                    <option th:each="r : ${rounds}" th:value="${r.id}" th:text="${r.nombre}">Jornada</option>
-                </select>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                    <label for="equipoLocalId" class="block text-sm font-medium text-gray-700 mb-1">Equipo local *</label>
-                    <select id="equipoLocalId" th:field="*{equipoLocalId}" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition bg-white">
-                        <option value="">Seleccionar...</option>
-                        <option th:each="t : ${teams}" th:value="${t.id}" th:text="${t.nombre}">Equipo</option>
+                        <option value="">Seleccionar jornada...</option>
+                        <option th:each="r : ${rounds}" th:value="${r.id}" th:text="${r.nombre}">Jornada</option>
                     </select>
                 </div>
-                <div>
-                    <label for="equipoVisitanteId" class="block text-sm font-medium text-gray-700 mb-1">Equipo visitante *</label>
-                    <select id="equipoVisitanteId" th:field="*{equipoVisitanteId}" required
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label for="equipoLocalId" class="block text-sm font-medium text-gray-700 mb-1">Equipo local
+                            *</label>
+                        <select id="equipoLocalId" th:field="*{equipoLocalId}" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition bg-white">
-                        <option value="">Seleccionar...</option>
-                        <option th:each="t : ${teams}" th:value="${t.id}" th:text="${t.nombre}">Equipo</option>
-                    </select>
+                            <option value="">Seleccionar...</option>
+                            <option th:each="t : ${teams}" th:if="${t.id != null and t.roundId != null}"
+                                th:value="${t.id}" th:text="${t.nombre}">Equipo</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="equipoVisitanteId" class="block text-sm font-medium text-gray-700 mb-1">Equipo
+                            visitante *</label>
+                        <select id="equipoVisitanteId" th:field="*{equipoVisitanteId}" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition bg-white">
+                            <option value="">Seleccionar...</option>
+                            <option th:each="t : ${teams}" 
+                                th:if="${t.id != null and t.roundId != null}" 
+                                th:value="${t.id}" 
+                                th:text="${t.nombre}">Equipo</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
 
-            <div>
-                <label for="fecha" class="block text-sm font-medium text-gray-700 mb-1">Fecha y hora</label>
-                <input type="datetime-local" id="fecha" th:field="*{fecha}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
-            </div>
+                <div>
+                    <label for="fecha" class="block text-sm font-medium text-gray-700 mb-1">Fecha y hora</label>
+                    <input type="datetime-local" id="fecha" th:field="*{fecha}"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                </div>
 
-            <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
-                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium shadow-sm">
-                    <span th:text="${matchId != null} ? 'Actualizar partido' : 'Crear partido'">Guardar</span>
-                </button>
-                <a href="/matches" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">Cancelar</a>
-            </div>
-        </form>
+                <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
+                    <button type="submit"
+                        class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium shadow-sm">
+                        <span th:text="${matchId != null} ? 'Actualizar partido' : 'Crear partido'">Guardar</span>
+                    </button>
+                    <a href="/matches"
+                        class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">Cancelar</a>
+                </div>
+            </form>
+
+        </div>
     </div>
-</div>
 </body>
+
 </html>

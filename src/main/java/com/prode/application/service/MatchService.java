@@ -29,17 +29,17 @@ public class MatchService {
 
     private final MatchRepository matchRepository;
     private final RoundRepository roundRepository;
-    private final TeamRepository  teamRepository;
-    private final ScoringService  scoringService;
+    private final TeamRepository teamRepository;
+    private final ScoringService scoringService;
 
     public MatchService(MatchRepository matchRepository,
-                        RoundRepository roundRepository,
-                        TeamRepository teamRepository,
-                        @Lazy ScoringService scoringService) {
+            RoundRepository roundRepository,
+            TeamRepository teamRepository,
+            @Lazy ScoringService scoringService) {
         this.matchRepository = matchRepository;
         this.roundRepository = roundRepository;
-        this.teamRepository  = teamRepository;
-        this.scoringService  = scoringService;
+        this.teamRepository = teamRepository;
+        this.scoringService = scoringService;
     }
 
     @Transactional(readOnly = true)
@@ -77,11 +77,33 @@ public class MatchService {
             throw new BusinessException("El equipo local y visitante deben ser diferentes");
 
         Round round = roundRepository.findById(request.getJornadaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Jornada no encontrada con id: " + request.getJornadaId()));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Jornada no encontrada con id: " + request.getJornadaId()));
         Team local = teamRepository.findById(request.getEquipoLocalId())
-                .orElseThrow(() -> new ResourceNotFoundException("Equipo local no encontrado con id: " + request.getEquipoLocalId()));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Equipo local no encontrado con id: " + request.getEquipoLocalId()));
         Team visitante = teamRepository.findById(request.getEquipoVisitanteId())
-                .orElseThrow(() -> new ResourceNotFoundException("Equipo visitante no encontrado con id: " + request.getEquipoVisitanteId()));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Equipo visitante no encontrado con id: " + request.getEquipoVisitanteId()));
+
+        // Regla 1: Ambos equipos deben existir con esa misma jornada
+        if (!local.getRoundId().equals(round.getId()) || !visitante.getRoundId().equals(round.getId())) {
+            throw new BusinessException("Ambos equipos deben pertenecer a la jornada seleccionada");
+        }
+
+        // Regla 3: La jornada no puede tener dos partidos donde juegue el mismo equipo
+        List<Match> matchesInRound = matchRepository.findByRoundId(round.getId());
+        boolean localYaJuega = matchesInRound.stream()
+                .anyMatch(m -> m.getEquipoLocal().getId().equals(local.getId())
+                        || m.getEquipoVisitante().getId().equals(local.getId()));
+        boolean visitanteYaJuega = matchesInRound.stream()
+                .anyMatch(m -> m.getEquipoLocal().getId().equals(visitante.getId())
+                        || m.getEquipoVisitante().getId().equals(visitante.getId()));
+
+        if (localYaJuega)
+            throw new BusinessException("El equipo local ya tiene un partido asignado en esta jornada");
+        if (visitanteYaJuega)
+            throw new BusinessException("El equipo visitante ya tiene un partido asignado en esta jornada");
 
         Match match = new Match();
         match.setRound(round);
@@ -103,11 +125,33 @@ public class MatchService {
             throw new BusinessException("El equipo local y visitante deben ser diferentes");
 
         Round round = roundRepository.findById(request.getJornadaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Jornada no encontrada con id: " + request.getJornadaId()));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Jornada no encontrada con id: " + request.getJornadaId()));
         Team local = teamRepository.findById(request.getEquipoLocalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Equipo local no encontrado"));
         Team visitante = teamRepository.findById(request.getEquipoVisitanteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Equipo visitante no encontrado"));
+
+        
+        if (!local.getRoundId().equals(round.getId()) || !visitante.getRoundId().equals(round.getId())) {
+            throw new BusinessException("Ambos equipos deben pertenecer a la jornada seleccionada");
+        }
+
+        List<Match> matchesInRound = matchRepository.findByRoundId(round.getId());
+        // Al actualizar, evitamos evaluar el partido contra sí mismo usando filter
+        boolean localYaJuega = matchesInRound.stream()
+                .filter(m -> !m.getId().equals(id))
+                .anyMatch(m -> m.getEquipoLocal().getId().equals(local.getId())
+                        || m.getEquipoVisitante().getId().equals(local.getId()));
+        boolean visitanteYaJuega = matchesInRound.stream()
+                .filter(m -> !m.getId().equals(id))
+                .anyMatch(m -> m.getEquipoLocal().getId().equals(visitante.getId())
+                        || m.getEquipoVisitante().getId().equals(visitante.getId()));
+
+        if (localYaJuega)
+            throw new BusinessException("El equipo local ya tiene un partido asignado en esta jornada");
+        if (visitanteYaJuega)
+            throw new BusinessException("El equipo visitante ya tiene un partido asignado en esta jornada");
 
         match.setRound(round);
         match.setFecha(request.getFecha());
@@ -172,7 +216,7 @@ public class MatchService {
     }
 
     // RF3.3: Gestión Automática de Estados de la Fecha.
-     
+
     private void recalculateRoundState(Long roundId) {
         Round round = roundRepository.findById(roundId)
                 .orElseThrow(() -> new ResourceNotFoundException("Jornada no encontrada con id: " + roundId));
@@ -187,10 +231,10 @@ public class MatchService {
 
         boolean anyEnJuego = matches.stream()
                 .anyMatch(m -> m.getEstado() == EstadoPartido.EN_JUEGO);
-                
+
         boolean allFinalizados = matches.stream()
                 .allMatch(m -> m.getEstado() == EstadoPartido.FINALIZADO);
-                
+
         boolean allPorJugarse = matches.stream()
                 .allMatch(m -> m.getEstado() == EstadoPartido.POR_JUGARSE);
 

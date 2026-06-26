@@ -1,23 +1,34 @@
 package com.prode.infrastructure.adapter.inbound.rest;
 
-import com.prode.application.dto.request.TeamRequest;
-import com.prode.application.dto.response.TeamResponse;
-import com.prode.application.service.TeamService;
-import com.prode.shared.dto.ApiResult;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.prode.application.dto.request.TeamRequest;
+import com.prode.application.dto.response.TeamResponse;
+import com.prode.application.service.TeamService;
+import com.prode.shared.dto.ApiResult;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/teams")
@@ -30,20 +41,34 @@ public class TeamController {
         this.teamService = teamService;
     }
 
+    
     @GetMapping
-    @Operation(summary = "Listar equipos activos", description = "Usar ?page=0&size=20 para paginacion")
+    @Operation(summary = "Listar equipos activos", description = "Usar ?page=0&size=20 para paginacion. Filtro opcional: ?jornadaId=X")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Lista de equipos obtenida correctamente")
     })
     public ResponseEntity<ApiResult<List<TeamResponse>>> getAll(
+            @Parameter(description = "ID de la jornada para filtrar") @RequestParam(required = false) Long jornadaId,
             @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+        
+        // 1. PRIMERO verificamos si el frontend está pidiendo filtrar por jornada
+        if (jornadaId != null) {
+            List<TeamResponse> teams = teamService.findAll().stream()
+                    .filter(t -> t.getRoundId() != null && t.getRoundId().equals(jornadaId))
+                    .collect(java.util.stream.Collectors.toList());
+            return ResponseEntity.ok(ApiResult.ok(teams));
+        }
+        
+        // 2. SI NO piden filtrar por jornada, aplicamos la paginación habitual
         if (pageable.getPageSize() > 0 && pageable.getPageNumber() >= 0) {
             Page<TeamResponse> page = teamService.findAll(pageable);
             return ResponseEntity.ok(ApiResult.ok(page.getContent()));
         }
+        
         List<TeamResponse> teams = teamService.findAll();
         return ResponseEntity.ok(ApiResult.ok(teams));
     }
+    
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener equipo por ID", description = "Obtiene un equipo con sus jugadores asociados")

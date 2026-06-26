@@ -37,4 +37,5 @@ public interface TeamRepository {
     Map<Long, List<String>> findAllTeamNamesByPlayerIds(Set<Long> playerIds);
     Map<Long, List<String>> findAllRolesByPlayerIds(Set<Long> playerIds);
     Page<Team> searchActiveTeams(String nombre, String roundNombre, Pageable pageable);
+    Page<Team> findAll(Pageable pageable);
 }

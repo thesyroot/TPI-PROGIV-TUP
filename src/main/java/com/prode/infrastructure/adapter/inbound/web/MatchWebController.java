@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes; 
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.prode.application.dto.request.MatchRequest;
 import com.prode.application.dto.request.MatchResultRequest;
@@ -46,7 +46,9 @@ public class MatchWebController {
     public String createForm(Model model) {
         model.addAttribute("matchRequest", new MatchRequest());
         model.addAttribute("rounds", roundService.findAll(null));
-        model.addAttribute("teams", teamService.findAll());
+
+        // Se envía una lista vacía para obligar al usuario a elegir una jornada primero
+        model.addAttribute("teams", java.util.List.of());
         return "matches/form";
     }
 
@@ -69,10 +71,18 @@ public class MatchWebController {
         request.setFecha(match.getFecha());
         request.setEquipoLocalId(match.getEquipoLocalId());
         request.setEquipoVisitanteId(match.getEquipoVisitanteId());
+
         model.addAttribute("matchRequest", request);
         model.addAttribute("matchId", id);
         model.addAttribute("rounds", roundService.findAll(null));
-        model.addAttribute("teams", teamService.findAll());
+
+        // filtro para enviar a la vista solo los equipos de la jornada de este
+        // partido
+        var equiposDeLaJornada = teamService.findAll().stream()
+                .filter(t -> t.getRoundId() != null && t.getRoundId().equals(match.getJornadaId()))
+                .toList();
+        model.addAttribute("teams", equiposDeLaJornada);
+
         return "matches/form";
     }
 
@@ -107,7 +117,8 @@ public class MatchWebController {
     }
 
     @PostMapping("/{id}/finalizar")
-    public String finalize(@PathVariable Long id, @ModelAttribute MatchResultRequest request, RedirectAttributes redirect) {
+    public String finalize(@PathVariable Long id, @ModelAttribute MatchResultRequest request,
+            RedirectAttributes redirect) {
         try {
             matchService.finalize(id, request.getPuntosLocal(), request.getPuntosVisitante());
             redirect.addFlashAttribute("success", "Partido finalizado exitosamente");

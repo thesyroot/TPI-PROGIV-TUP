@@ -23,7 +23,6 @@ import com.prode.domain.port.outbound.RoundRepository;
 import com.prode.domain.port.outbound.TeamRepository;
 import com.prode.shared.exception.BusinessException;
 import com.prode.shared.exception.ResourceNotFoundException;
-
 @Service
 @Transactional
 public class TeamService {
@@ -48,9 +47,7 @@ public class TeamService {
 
     @Transactional(readOnly = true)
     public Page<TeamResponse> findAll(Pageable pageable) {
-        Page<Team> page = teamRepository.findAllActive(pageable);
-        List<TeamResponse> responses = toResponseList(page.getContent());
-        return new org.springframework.data.domain.PageImpl<>(responses, pageable, page.getTotalElements());
+        return teamRepository.findAll(pageable).map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
