@@ -137,14 +137,46 @@ public class TeamService {
     }
 
     private void syncPlayerAssignments(Long teamId, Map<Long, String> roles) {
+        if (roles == null || roles.isEmpty()) {
+            teamRepository.removeAllPlayersFromTeam(teamId);
+            return;
+        }
+
+        // Limitamos la cantidad de jugadores
+        if (roles.size() > 26) {
+            throw new BusinessException("No se pueden asignar más de 26 jugadores a un equipo a la vez.");
+        }
+
+        // validamos los roles permitidos
+        Set<String> rolesValidos = Set.of("ARQUERO", "DEFENSOR", "MEDIOCAMPISTA", "DELANTERO");
+
         Map<Long, String> currentRoles = teamRepository.findPlayerRolesByTeamId(teamId);
+
         for (Map.Entry<Long, String> entry : roles.entrySet()) {
             Long playerId = entry.getKey();
-            String newRol = entry.getValue();
+            String rawRol = entry.getValue();
+            
+            // Limpieza básica del string
+            String newRol = (rawRol != null) ? rawRol.trim().toUpperCase() : "";
+
+            // impedimos ids invalidos
+            if (playerId == null || playerId <= 0) continue;
+
             String currentRol = currentRoles.get(playerId);
-            if (newRol != null && !newRol.trim().isEmpty()) {
+
+            if (!newRol.isEmpty()) {
+                if (!rolesValidos.contains(newRol)) {
+                    throw new BusinessException("Rol no permitido o inválido: " + newRol);
+                }
+                
+                // buscar si el jugador existe y está activo
+                if (!playerRepository.existsById(playerId)) {
+                    throw new ResourceNotFoundException("El jugador con ID " + playerId + " no existe.");
+                }
+                
                 teamRepository.assignPlayerToTeam(teamId, playerId, newRol);
             } else if (currentRol != null) {
+                // si se envia un rol vacío pero el jugador estaba en el equipo, lo removemos
                 teamRepository.removePlayerFromTeam(teamId, playerId);
             }
         }
