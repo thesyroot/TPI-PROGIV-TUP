@@ -227,6 +227,10 @@ public class PredictionService {
         PredictionResponse response = new PredictionResponse();
         response.setId(prediction.getId());
         response.setMatchId(prediction.getMatch().getId());
+        
+        response.setLocalId(prediction.getMatch().getEquipoLocal().getId());
+        response.setVisitanteId(prediction.getMatch().getEquipoVisitante().getId());
+        
         response.setLocal(prediction.getMatch().getEquipoLocal().getNombre());
         response.setLocalImagen(prediction.getMatch().getEquipoLocal().getImagenUrl());
         response.setVisitante(prediction.getMatch().getEquipoVisitante().getNombre());

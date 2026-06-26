@@ -45,6 +45,7 @@ public class PredictionMapper {
             entity.setTendencia(domain.getTendencia().name());
         entity.setFechaCarga(domain.getFechaCarga());
         entity.setFechaModificacion(domain.getFechaModificacion());
+        
         return entity;
     }
 }

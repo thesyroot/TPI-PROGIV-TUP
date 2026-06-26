@@ -23,6 +23,7 @@ import com.prode.application.dto.response.MatchResponse;
 import com.prode.application.service.MatchService;
 import com.prode.application.service.PredictionService;
 import com.prode.application.service.RoundService;
+import com.prode.application.service.TeamService;
 
 @Controller
 @RequestMapping("/user")
@@ -31,13 +32,16 @@ public class UserPredictionWebController {
     private final PredictionService predictionService;
     private final MatchService matchService;
     private final RoundService roundService;
+    private final TeamService teamService;
 
     public UserPredictionWebController(PredictionService predictionService,
             MatchService matchService,
-            RoundService roundService) {
+            RoundService roundService,
+            TeamService teamService) {
         this.predictionService = predictionService;
         this.matchService = matchService;
         this.roundService = roundService;
+        this.teamService = teamService;
     }
 
     // ... otros imports ...
@@ -144,6 +148,13 @@ public class UserPredictionWebController {
         } catch (Exception e) {
             return "redirect:/user/pronosticos";
         }
+    }
+
+    @GetMapping("/equipo/{id}")
+    public String teamDetail(@PathVariable Long id, Model model) {
+        model.addAttribute("team", teamService.findById(id));
+        model.addAttribute("pageTitle", "Detalle de Equipo");
+        return "user/teams/detail"; 
     }
 
     @PostMapping("/pronosticos/{id}/actualizar")

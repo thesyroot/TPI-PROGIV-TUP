@@ -64,42 +64,172 @@ public class PredictionResponse {
     @Schema(description = "Indicates if the prediction can no longer be edited (less than 30 mins to match or already started/finished)", example = "true")
     private boolean bloqueado;
 
-    public PredictionResponse() {}
+    @Schema(description = "Home team ID", example = "10")
+    private Long localId;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getMatchId() { return matchId; }
-    public void setMatchId(Long matchId) { this.matchId = matchId; }
-    public String getLocal() { return local; }
-    public void setLocal(String local) { this.local = local; }
-    public String getLocalImagen() { return localImagen; }
-    public void setLocalImagen(String localImagen) { this.localImagen = localImagen; }
-    public String getVisitante() { return visitante; }
-    public void setVisitante(String visitante) { this.visitante = visitante; }
-    public String getVisitanteImagen() { return visitanteImagen; }
-    public void setVisitanteImagen(String visitanteImagen) { this.visitanteImagen = visitanteImagen; }
-    public LocalDateTime getFechaPartido() { return fechaPartido; }
-    public void setFechaPartido(LocalDateTime fechaPartido) { this.fechaPartido = fechaPartido; }
-    public String getJornada() { return jornada; }
-    public void setJornada(String jornada) { this.jornada = jornada; }
-    public Integer getPuntosLocal() { return puntosLocal; }
-    public void setPuntosLocal(Integer puntosLocal) { this.puntosLocal = puntosLocal; }
-    public Integer getPuntosVisitante() { return puntosVisitante; }
-    public void setPuntosVisitante(Integer puntosVisitante) { this.puntosVisitante = puntosVisitante; }
-    public EstadoPrediccion getEstado() { return estado; }
-    public void setEstado(EstadoPrediccion estado) { this.estado = estado; }
-    public Tendencia getTendencia() { return tendencia; }
-    public void setTendencia(Tendencia tendencia) { this.tendencia = tendencia; }
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-    public String getUserNombre() { return userNombre; }
-    public void setUserNombre(String userNombre) { this.userNombre = userNombre; }
-    public LocalDateTime getFechaCarga() { return fechaCarga; }
-    public void setFechaCarga(LocalDateTime fechaCarga) { this.fechaCarga = fechaCarga; }
-    public LocalDateTime getFechaModificacion() { return fechaModificacion; }
-    public void setFechaModificacion(LocalDateTime fechaModificacion) { this.fechaModificacion = fechaModificacion; }
-    public Integer getPuntosObtenidos() { return puntosObtenidos; }
-    public void setPuntosObtenidos(Integer puntosObtenidos) { this.puntosObtenidos = puntosObtenidos; }
-    public boolean isBloqueado() { return bloqueado; }
-    public void setBloqueado(boolean bloqueado) { this.bloqueado = bloqueado; }
+    @Schema(description = "Away team ID", example = "11")
+    private Long visitanteId;
+
+    public PredictionResponse() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getMatchId() {
+        return matchId;
+    }
+
+    public void setMatchId(Long matchId) {
+        this.matchId = matchId;
+    }
+
+    public String getLocal() {
+        return local;
+    }
+
+    public void setLocal(String local) {
+        this.local = local;
+    }
+
+    public String getLocalImagen() {
+        return localImagen;
+    }
+
+    public void setLocalImagen(String localImagen) {
+        this.localImagen = localImagen;
+    }
+
+    public String getVisitante() {
+        return visitante;
+    }
+
+    public void setVisitante(String visitante) {
+        this.visitante = visitante;
+    }
+
+    public String getVisitanteImagen() {
+        return visitanteImagen;
+    }
+
+    public void setVisitanteImagen(String visitanteImagen) {
+        this.visitanteImagen = visitanteImagen;
+    }
+
+    public LocalDateTime getFechaPartido() {
+        return fechaPartido;
+    }
+
+    public void setFechaPartido(LocalDateTime fechaPartido) {
+        this.fechaPartido = fechaPartido;
+    }
+
+    public String getJornada() {
+        return jornada;
+    }
+
+    public void setJornada(String jornada) {
+        this.jornada = jornada;
+    }
+
+    public Integer getPuntosLocal() {
+        return puntosLocal;
+    }
+
+    public void setPuntosLocal(Integer puntosLocal) {
+        this.puntosLocal = puntosLocal;
+    }
+
+    public Integer getPuntosVisitante() {
+        return puntosVisitante;
+    }
+
+    public void setPuntosVisitante(Integer puntosVisitante) {
+        this.puntosVisitante = puntosVisitante;
+    }
+
+    public EstadoPrediccion getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoPrediccion estado) {
+        this.estado = estado;
+    }
+
+    public Tendencia getTendencia() {
+        return tendencia;
+    }
+
+    public void setTendencia(Tendencia tendencia) {
+        this.tendencia = tendencia;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getUserNombre() {
+        return userNombre;
+    }
+
+    public void setUserNombre(String userNombre) {
+        this.userNombre = userNombre;
+    }
+
+    public LocalDateTime getFechaCarga() {
+        return fechaCarga;
+    }
+
+    public void setFechaCarga(LocalDateTime fechaCarga) {
+        this.fechaCarga = fechaCarga;
+    }
+
+    public LocalDateTime getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(LocalDateTime fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
+    }
+
+    public Integer getPuntosObtenidos() {
+        return puntosObtenidos;
+    }
+
+    public void setPuntosObtenidos(Integer puntosObtenidos) {
+        this.puntosObtenidos = puntosObtenidos;
+    }
+
+    public boolean isBloqueado() {
+        return bloqueado;
+    }
+
+    public void setBloqueado(boolean bloqueado) {
+        this.bloqueado = bloqueado;
+    }
+
+    public Long getLocalId() {
+        return localId;
+    }
+
+    public void setLocalId(Long localId) {
+        this.localId = localId;
+    }
+
+    public Long getVisitanteId() {
+        return visitanteId;
+    }
+
+    public void setVisitanteId(Long visitanteId) {
+        this.visitanteId = visitanteId;
+    }
 }
