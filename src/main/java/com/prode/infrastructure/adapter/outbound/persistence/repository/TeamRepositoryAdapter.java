@@ -216,4 +216,10 @@ public class TeamRepositoryAdapter implements TeamRepository {
         }
         return mapa;
     }
+
+    @Override
+    public Page<Team> searchActiveTeams(String nombre, String roundNombre, Pageable pageable) {
+        return jpaTeamRepository.searchTeams(nombre, roundNombre, pageable)
+                .map(TeamMapper::toDomain);
+    }
 }

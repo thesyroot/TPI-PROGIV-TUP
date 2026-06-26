@@ -82,3 +82,50 @@ if (playerSearchInput) {
         });
     });
 }
+
+const teamNameInput = document.getElementById('teamNameSearch');
+const teamRoundInput = document.getElementById('teamRoundSearch');
+const tableContainer = document.getElementById('teamTableContainer');
+
+if (teamNameInput && teamRoundInput && tableContainer) {
+    
+    // Función que pide el fragmento de tabla al backend
+    function fetchTeamsAsync(page = 0) {
+        const nameVal = teamNameInput.value;
+        const roundVal = teamRoundInput.value;
+        
+        // Armamos la URL con los parámetros
+        const url = `/teams/search?nombre=${encodeURIComponent(nameVal)}&roundNombre=${encodeURIComponent(roundVal)}&page=${page}`;
+        
+        fetch(url)
+            .then(response => response.text())
+            .then(htmlFragment => {
+                // Reemplazamos el HTML viejo por la tabla nueva paginada/filtrada
+                tableContainer.innerHTML = htmlFragment;
+            })
+            .catch(error => console.error('Error cargando equipos:', error));
+    }
+
+    // Usamos un 'debounce' (retraso) de 300ms para no saturar la base de datos 
+    // si el usuario teclea muy rápido
+    let typingTimer;
+    const handleInput = () => {
+        clearTimeout(typingTimer);
+        // Siempre que se escribe en el buscador, volvemos a la página 0
+        typingTimer = setTimeout(() => fetchTeamsAsync(0), 300);
+    };
+
+    teamNameInput.addEventListener('input', handleInput);
+    teamRoundInput.addEventListener('input', handleInput);
+
+    // Como la tabla se reconstruye, usamos "Delegación de Eventos" para escuchar los clicks 
+    // en las flechas de paginación
+    tableContainer.addEventListener('click', function(e) {
+        const pageLink = e.target.closest('.pagination-link');
+        if (pageLink) {
+            e.preventDefault(); // Evita que el link recargue la página saltando hacia arriba
+            const pageNum = pageLink.getAttribute('data-page');
+            fetchTeamsAsync(pageNum); // Pide la nueva página conservando el texto del filtro
+        }
+    });
+}

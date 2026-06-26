@@ -232,4 +232,11 @@ public class TeamService {
     public Map<Long, String> getPlayerRolesByTeamId(Long teamId) {
         return teamRepository.findPlayerRolesByTeamId(teamId);
     }
+
+    @Transactional(readOnly = true)
+    public Page<TeamResponse> searchTeams(String nombre, String roundNombre, Pageable pageable) {
+        Page<Team> page = teamRepository.searchActiveTeams(nombre, roundNombre, pageable);
+        List<TeamResponse> responses = toResponseList(page.getContent());
+        return new org.springframework.data.domain.PageImpl<>(responses, pageable, page.getTotalElements());
+    }
 }

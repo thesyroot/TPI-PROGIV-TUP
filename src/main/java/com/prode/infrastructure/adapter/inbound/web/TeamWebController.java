@@ -1,7 +1,6 @@
 package com.prode.infrastructure.adapter.inbound.web;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -13,10 +12,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.prode.application.dto.request.TeamRequest;
-import com.prode.application.dto.response.PlayerResponse;
 import com.prode.application.service.PlayerService;
 import com.prode.application.service.RoundService;
 import com.prode.application.service.TeamService;
@@ -105,5 +104,17 @@ public class TeamWebController {
             redirect.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/teams";
+    }
+
+    @GetMapping("/search")
+    public String searchAsync(
+            @RequestParam(required = false, defaultValue = "") String nombre,
+            @RequestParam(required = false, defaultValue = "") String roundNombre,
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            Model model) {
+        
+        model.addAttribute("pageData", teamService.searchTeams(nombre, roundNombre, pageable));
+        // Devuelve SOLO el fragmento llamado 'tableFragment' del archivo list.html
+        return "teams/list :: tableFragment";
     }
 }

@@ -1,96 +1,147 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout :: layout(pageTitle='Equipos', page=~{::content})}">
-<body>
-<div th:fragment="content">
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-800">Equipos</h2>
-            <p class="text-gray-500 mt-1">Gestion de equipos del torneo</p>
-        </div>
-        <a href="/teams/new" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium shadow-sm">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Nuevo equipo
-        </a>
-    </div>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(pageTitle='Equipos', page=~{::content})}">
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div th:if="${pageData.totalElements == 0}" class="p-6 text-center text-gray-500">
-            No hay equipos registrados todavia.
-        </div>
-        <table class="w-full" th:unless="${pageData.totalElements == 0}">
-            <thead>
-                <tr class="bg-gray-50 border-b border-gray-100">
-                    <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Equipo</th>
-                    <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Jugadores</th>
-                    <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                <tr th:each="team : ${pageData.content}" class="hover:bg-gray-50 transition">
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <img th:if="${team.imagenUrl}" th:src="${team.imagenUrl}" alt="" class="w-10 h-10 rounded-lg object-cover bg-gray-100">
-                            <div th:unless="${team.imagenUrl}" class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
-                                <span th:text="${#strings.substring(team.nombre, 0, 2)}">AB</span>
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-900">
-                                    <span th:text="${team.nombre}">Nombre</span>
-                                    <span th:if="${team.roundNombre}" 
-                                          th:text="' (' + ${team.roundNombre} + ')'" 
-                                          class="text-xs text-gray-500 font-normal bg-gray-100 px-2 py-0.5 rounded-full ml-1">
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-gray-600 hidden md:table-cell" th:text="${team.cantidadJugadores}">0</td>
-                    <td class="px-6 py-4 text-right">
-                        <div class="flex items-center justify-end gap-2">
-                            <a th:href="@{'/teams/' + ${team.id}}" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Ver">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                </svg>
-                            </a>
-                            <a th:href="@{'/teams/' + ${team.id} + '/edit'}" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition" title="Editar">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                </svg>
-                            </a>
-                            <button th:onclick="'openDeleteModal(\'/teams/' + ${team.id} + '/delete\')'" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title="Eliminar">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div th:if="${pageData.totalPages > 1}" class="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50">
-            <div class="text-sm text-gray-500">
-                <span th:text="${pageData.number * pageData.size + 1}">1</span>
-                - <span th:text="${(pageData.number * pageData.size) + pageData.size > pageData.totalElements ? pageData.totalElements : (pageData.number * pageData.size) + pageData.size}">10</span>
-                de <span th:text="${pageData.totalElements}">N</span>
+<body>
+    <div th:fragment="content">
+
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Equipos</h2>
+                <p class="text-gray-500 mt-1">Gestion de equipos del torneo</p>
             </div>
-            <div class="flex items-center gap-1">
-                <a th:if="${pageData.hasPrevious()}" th:href="@{/teams(page=${pageData.number - 1}, size=${pageData.size})}"
-                   class="px-3 py-1.5 text-sm rounded-md bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 transition">Anterior</a>
-                <th:block th:each="i : ${#numbers.sequence(0, pageData.totalPages - 1)}">
-                    <a th:if="${i == pageData.number}"
-                       class="px-3 py-1.5 text-sm rounded-md bg-indigo-600 text-white font-medium" th:text="${i + 1}">1</a>
-                    <a th:unless="${i == pageData.number}" th:href="@{/teams(page=${i}, size=${pageData.size})}"
-                       class="px-3 py-1.5 text-sm rounded-md bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 transition" th:text="${i + 1}">1</a>
-                </th:block>
-                <a th:if="${pageData.hasNext()}" th:href="@{/teams(page=${pageData.number + 1}, size=${pageData.size})}"
-                   class="px-3 py-1.5 text-sm rounded-md bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 transition">Siguiente</a>
+            <a href="/teams/new"
+                class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Nuevo equipo
+            </a>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+
+            <div th:unless="${pageData.totalElements == 0}"
+                class="p-4 border-b border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50/50">
+                <div>
+                    <label for="teamNameSearch" class="block text-xs font-medium text-gray-500 mb-1">Buscar por
+                        nombre</label>
+                    <input type="text" id="teamNameSearch" placeholder="Ej. Boca Juniors..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm">
+                </div>
+                <div>
+                    <label for="teamRoundSearch" class="block text-xs font-medium text-gray-500 mb-1">Buscar por
+                        jornada</label>
+                    <input type="text" id="teamRoundSearch" placeholder="Ej. Jornada 1..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm">
+                </div>
+            </div>
+
+            <div id="teamTableContainer" th:fragment="tableFragment">
+                <div th:if="${pageData.totalElements == 0}" class="p-6 text-center text-gray-500">
+                    No hay equipos que coincidan con la búsqueda.
+                </div>
+
+                <table class="w-full" th:unless="${pageData.totalElements == 0}">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-100">
+                            <th
+                                class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                Equipo</th>
+                            <th
+                                class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                                Jugadores</th>
+                            <th
+                                class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <tr th:each="team : ${pageData.content}" class="hover:bg-gray-50 transition">
+
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <img th:if="${team.imagenUrl}" th:src="${team.imagenUrl}" alt=""
+                                        class="w-10 h-10 rounded-lg object-cover bg-gray-100">
+                                    <div th:unless="${team.imagenUrl}"
+                                        class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
+                                        <span th:text="${#strings.substring(team.nombre, 0, 2)}">AB</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">
+                                            <span th:text="${team.nombre}" class="team-name">Nombre</span>
+                                            <span th:if="${team.roundNombre}" th:text="' (' + ${team.roundNombre} + ')'"
+                                                class="team-round text-xs text-gray-500 font-normal bg-gray-100 px-2 py-0.5 rounded-full ml-1">
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="px-6 py-4 text-gray-600 hidden md:table-cell"
+                                th:text="${team.cantidadJugadores}">0</td>
+
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex items-center justify-end gap-2">
+                                    <a th:href="@{'/teams/' + ${team.id}}"
+                                        class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                                        title="Ver">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
+                                    <a th:href="@{'/teams/' + ${team.id} + '/edit'}"
+                                        class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition"
+                                        title="Editar">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </a>
+                                    <button th:onclick="'openDeleteModal(\'/teams/' + ${team.id} + '/delete\')'"
+                                        class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title="Eliminar">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div th:if="${pageData.totalPages > 1}"
+                    class="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50">
+                    <div class="text-sm text-gray-500">
+                        <span th:text="${pageData.number * pageData.size + 1}">1</span>
+                        - <span
+                            th:text="${(pageData.number * pageData.size) + pageData.size > pageData.totalElements ? pageData.totalElements : (pageData.number * pageData.size) + pageData.size}">10</span>
+                        de <span th:text="${pageData.totalElements}">N</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <a th:if="${pageData.hasPrevious()}" href="#" th:data-page="${pageData.number - 1}"
+                            class="pagination-link px-3 py-1.5 text-sm rounded-md bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 transition">Anterior</a>
+
+                        <th:block th:each="i : ${#numbers.sequence(0, pageData.totalPages - 1)}">
+                            <a th:if="${i == pageData.number}" href="#"
+                                class="px-3 py-1.5 text-sm rounded-md bg-indigo-600 text-white font-medium"
+                                th:text="${i + 1}">1</a>
+                            <a th:unless="${i == pageData.number}" href="#" th:data-page="${i}"
+                                class="pagination-link px-3 py-1.5 text-sm rounded-md bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 transition"
+                                th:text="${i + 1}">1</a>
+                        </th:block>
+
+                        <a th:if="${pageData.hasNext()}" href="#" th:data-page="${pageData.number + 1}"
+                            class="pagination-link px-3 py-1.5 text-sm rounded-md bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 transition">Siguiente</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </body>
+
 </html>
