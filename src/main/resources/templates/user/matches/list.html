@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{user/layout :: layout(pageTitle='Partidos Finalizados', page=~{::content})}">
+
+<body>
+    <div th:fragment="content">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Partidos Finalizados</h2>
+                <p class="text-gray-500 mt-1">Revisa los resultados y tus puntos obtenidos</p>
+            </div>
+        </div>
+
+        <div class="mb-4 flex items-center gap-3">
+            <label class="text-sm font-medium text-gray-600">Filtrar por jornada:</label>
+            <select
+                onchange="if(this.value) window.location='/user/partidos?jornadaId='+this.value; else window.location='/user/partidos';"
+                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm bg-white">
+                <option value="">Todas las jornadas</option>
+                <option th:each="r : ${rounds}" th:value="${r.id}" th:selected="${selectedJornada == r.id}"
+                    th:text="${r.nombre}">Jornada</option>
+            </select>
+        </div>
+
+        <div class="space-y-4">
+            <div th:if="${#lists.isEmpty(matches)}"
+                class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center text-gray-500">
+                Todavía no hay partidos finalizados.
+            </div>
+
+            <div th:each="item : ${matches}"
+                class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition">
+
+                <div class="flex items-center justify-between mb-3 border-b border-gray-50 pb-2">
+                    <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded"
+                        th:text="${item.match.jornadaNombre}">Jornada</span>
+                    <span class="text-xs text-gray-400"
+                        th:text="${#temporals.format(item.match.fecha, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                </div>
+
+                <div class="flex items-center justify-between py-2">
+                    <div class="flex items-center gap-3 w-5/12">
+                        <img th:if="${item.match.equipoLocalImagen}" th:src="${item.match.equipoLocalImagen}"
+                            class="w-12 h-12 rounded-lg object-cover bg-gray-100 hidden sm:block">
+                        <div th:unless="${item.match.equipoLocalImagen}"
+                            class="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold hidden sm:flex">
+                            <span th:text="${#strings.substring(item.match.equipoLocalNombre, 0, 2)}">LO</span>
+                        </div>
+                        <span class="font-medium text-gray-900 text-sm sm:text-base text-right w-full"
+                            th:text="${item.match.equipoLocalNombre}">Local</span>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center w-2/12">
+                        <div class="flex items-center gap-2 font-black text-2xl">
+                            <span th:text="${item.match.puntosLocal}" class="text-gray-800">0</span>
+                            <span class="text-gray-300">-</span>
+                            <span th:text="${item.match.puntosVisitante}" class="text-gray-800">0</span>
+                        </div>
+                        <span class="text-[10px] uppercase text-gray-400 font-bold mt-1 tracking-wider">Final</span>
+                    </div>
+
+                    <div class="flex items-center gap-3 w-5/12">
+                        <span class="font-medium text-gray-900 text-sm sm:text-base w-full"
+                            th:text="${item.match.equipoVisitanteNombre}">Visitante</span>
+                        <img th:if="${item.match.equipoVisitanteImagen}" th:src="${item.match.equipoVisitanteImagen}"
+                            class="w-12 h-12 rounded-lg object-cover bg-gray-100 hidden sm:block">
+                        <div th:unless="${item.match.equipoVisitanteImagen}"
+                            class="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold hidden sm:flex">
+                            <span th:text="${#strings.substring(item.match.equipoVisitanteNombre, 0, 2)}">VI</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-gray-100 bg-gray-50 rounded-lg p-3">
+                    <div th:if="${item.prediction != null}"
+                        class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span class="text-sm text-gray-700">
+                            Tu pronóstico: <b class="text-gray-900" th:text="${item.prediction.puntosLocal}"></b> - <b
+                                class="text-gray-900" th:text="${item.prediction.puntosVisitante}"></b>
+                        </span>
+
+                        <th:block th:if="${item.prediction.puntosObtenidos != null}">
+                            <span th:if="${item.prediction.puntosObtenidos > 0}"
+                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700"
+                                th:text="'¡Acertaste! (+' + ${item.prediction.puntosObtenidos} + ' pts)'"></span>
+                            <span th:if="${item.prediction.puntosObtenidos == 0}"
+                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">No
+                                acertaste (0 pts)</span>
+                        </th:block>
+                        <th:block th:unless="${item.prediction.puntosObtenidos != null}">
+                            <span
+                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-600">Calculando...</span>
+                        </th:block>
+                    </div>
+
+                    <div th:unless="${item.prediction != null}"
+                        class="text-sm text-gray-500 italic flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        No realizaste un pronóstico para este partido.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
