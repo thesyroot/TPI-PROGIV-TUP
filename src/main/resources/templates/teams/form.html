@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout :: layout(pageTitle=(${teamId != null} ? 'Editar Equipo' : 'Nuevo Equipo'), page=~{::content})}">
+    th:replace="~{layout :: layout(pageTitle=(${teamId != null} ? 'Editar Equipo' : 'Nuevo Equipo'), page=~{::content})}">
 
 <body>
     <div th:fragment="content">
@@ -57,7 +57,7 @@
                 <div class="border-t border-gray-100 pt-4">
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">Asignar jugadores al equipo</h3>
                     <div class="mb-3">
-                        <input type="text" id="playerSearch" onkeyup="filterPlayers()" placeholder="Buscar jugador..."
+                        <input type="text" id="playerSearch" placeholder="Buscar jugador..."
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm">
                     </div>
                     <div class="overflow-x-auto max-h-96 overflow-y-auto">
@@ -89,16 +89,20 @@
                                             class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition bg-white text-sm">
                                             <option value="">No asignado</option>
                                             <option value="ARQUERO"
-                                                th:selected="${teamRequest.roles != null and teamRequest.roles.get(player.id) == 'ARQUERO'}">Arquero
+                                                th:selected="${teamRequest.roles != null and teamRequest.roles.get(player.id) == 'ARQUERO'}">
+                                                Arquero
                                             </option>
                                             <option value="DEFENSOR"
-                                                th:selected="${teamRequest.roles != null and teamRequest.roles.get(player.id) == 'DEFENSOR'}">Defensor
+                                                th:selected="${teamRequest.roles != null and teamRequest.roles.get(player.id) == 'DEFENSOR'}">
+                                                Defensor
                                             </option>
                                             <option value="MEDIOCAMPISTA"
-                                                th:selected="${teamRequest.roles != null and teamRequest.roles.get(player.id) == 'MEDIOCAMPISTA'}">Mediocampista
+                                                th:selected="${teamRequest.roles != null and teamRequest.roles.get(player.id) == 'MEDIOCAMPISTA'}">
+                                                Mediocampista
                                             </option>
                                             <option value="DELANTERO"
-                                                th:selected="${teamRequest.roles != null and teamRequest.roles.get(player.id) == 'DELANTERO'}">Delantero
+                                                th:selected="${teamRequest.roles != null and teamRequest.roles.get(player.id) == 'DELANTERO'}">
+                                                Delantero
                                             </option>
                                         </select>
                                     </td>
@@ -119,17 +123,7 @@
             </form>
         </div>
     </div>
-    <script>
-        function filterPlayers() {
-            var input = document.getElementById('playerSearch');
-            var filter = input.value.toLowerCase();
-            var rows = document.querySelectorAll('.player-row');
-            rows.forEach(function (row) {
-                var nameCell = row.querySelector('td');
-                var name = nameCell ? nameCell.textContent.toLowerCase() : '';
-                row.style.display = name.includes(filter) ? '' : 'none';
-            });
-        }
-    </script>
+
 </body>
+
 </html>
